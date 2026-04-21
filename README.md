@@ -25,3 +25,28 @@ oswiec laska;
 
 oswiec 2 + 4 * (3 + 1) - 5 / 5;
 ```
+
+# ⚡ Installation (The Ritual)
+To bring the light of GOD++ into thy machine, thou must first cleanse thy PATH of all worldly filth.
+
+Humble thyself before the Command Line.
+
+Clone the Heavens:
+```
+git clone https://github.com/minerbomb/GOD-l--l-.git
+```
+
+Perform the Consecration:
+```
+.\run.bat
+```
+
+# ⚖️ The Commandments (License)
+This software is provided "as is," by the grace of the Almighty. Thou shalt not fork this repository to create a "Satan++," lest thy CPU be struck by lightning and thy memory be leaked unto the seventh generation.
+
+---
+---
+
+## Go forth and code in His image.
+
+"And the Compiler saw the binary, and behold, it was very good." — The Book of Documentation, 1:1
