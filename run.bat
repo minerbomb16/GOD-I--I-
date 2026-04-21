@@ -9,7 +9,7 @@ echo --- 2. Kompilacja kodu Java ---
 javac -cp "antlr-4.13.2-complete.jar;output;." output\*.java *.java
 
 echo --- 3. Uruchamianie kompilatora LangX ---
-java -cp "antlr-4.13.2-complete.jar;output;." Main test.x > test.ll
+java -cp "antlr-4.13.2-complete.jar;output;." Main test.god > test.ll
 
 if %errorlevel% neq 0 (
     echo.

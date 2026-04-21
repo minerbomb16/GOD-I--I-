@@ -11,19 +11,23 @@ Omniscient Error Handling: There are no "bugs," only trials sent to test thy fai
 Infallible Compilation: If thy code faileth to build, it is not the compiler that is flawed, but thy soul.
 
 # 📖 A Psalm of Code
-Behold, a glimpse into the sacred scrolls of a GOD file:
+Behold, a glimpse into the sacred scrolls of a .god file:
 
 ```
-skromny grzechy;
-wysluchaj grzechy;
+Summon Mortal sins;
+Hearken sins;
 
-skromny pokuta = grzechy * 2;
-oswiec pokuta;
+Create Mortal penance in the image of sins * 2;
+Enlighten penance;
 
-boski laska = 3.14;
-oswiec laska;
+Create Divine grace in the image of 3.14;
+Enlighten grace;
 
-oswiec 2 + 4 * (3 + 1) - 5 / 5;
+penance be transformed into 0;
+Enlighten penance;
+
+Create Mortal trial in the image of 2 + 4 * (3 + 1) - 5 / 5;
+Enlighten trial;
 ```
 
 # ⚡ Installation (The Ritual)

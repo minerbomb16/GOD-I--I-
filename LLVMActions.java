@@ -80,13 +80,13 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitIntConst(LangXParser.IntConstContext ctx) {
         valueStack.push(ctx.INT().getText());
-        typeStack.push("skromny");
+        typeStack.push("Mortal");
     }
 
     @Override
     public void exitRealConst(LangXParser.RealConstContext ctx) {
         valueStack.push(ctx.REAL().getText());
-        typeStack.push("boski");
+        typeStack.push("Divine");
     }
 
     @Override

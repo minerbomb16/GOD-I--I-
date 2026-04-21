@@ -4,7 +4,7 @@ class LLVMGenerator {
     static int reg = 1;
 
     private static String checkType(String type) {
-        return type.equals("skromny") ? "i32" : "double";
+        return type.equals("Mortal") ? "i32" : "double";
     }
 
     static void declare(String id, String type) {
@@ -27,7 +27,7 @@ class LLVMGenerator {
        String llvmType = checkType(type);
        String inst = "";
        
-       if (type.equals("skromny")) {
+       if (type.equals("Mortal")) {
           if (op.equals("+")) inst = "add";
           if (op.equals("-")) inst = "sub";
           if (op.equals("*")) inst = "mul";
@@ -44,7 +44,7 @@ class LLVMGenerator {
     }
 
     static void print(String valueReg, String type) {
-       if (type.equals("skromny")) {
+       if (type.equals("Mortal")) {
           main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 " + valueReg + ")\n";
        } else {
           main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double " + valueReg + ")\n";
@@ -53,7 +53,7 @@ class LLVMGenerator {
     }
 
     static void read(String id, String type) {
-       if (type.equals("skromny")) {
+       if (type.equals("Mortal")) {
           main_text += "    call void @readInt(i32* %" + id + ")\n";
        } else {
           main_text += "    call void @readReal(double* %" + id + ")\n";

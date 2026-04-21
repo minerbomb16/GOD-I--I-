@@ -3,15 +3,14 @@ grammar LangX;
 prog: stat+ EOF 
     ;
 
-stat: type ID '=' expr ';'     #declareAndAssign
-    | type ID ';'              #declare
-    | ID '=' expr ';'          #assign
-    | 'oswiec' expr ';'        #write
-    | 'wysluchaj' ID ';'       #read
+stat: 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
+    | 'Summon' type ID ';'                         #declare
+    | ID 'be transformed into' expr ';'            #assign
+    | 'Enlighten' expr ';'                         #write
+    | 'Hearken' ID ';'                             #read
     ;
 
-type: 'skromny' | 'boski'
-    ;
+type: 'Mortal' | 'Divine' ;
 
 expr: expr op=('*' | '/') expr #mulDiv
     | expr op=('+' | '-') expr #addSub
