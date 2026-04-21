@@ -11,7 +11,7 @@ Omniscient Error Handling: There are no "bugs," only trials sent to test thy fai
 Infallible Compilation: If thy code faileth to build, it is not the compiler that is flawed, but thy soul.
 
 # 📖 A Psalm of Code
-Behold, a glimpse into the sacred scrolls of a .god file:
+Behold, a glimpse into the sacred scrolls of a GOD file:
 
 ```
 skromny grzechy;
