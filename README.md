@@ -14,20 +14,20 @@ Infallible Compilation: If thy code faileth to build, it is not the compiler tha
 Behold, a glimpse into the sacred scrolls of a .god file:
 
 ```
-Summon Mortal sins;
-Hearken sins;
+Create Mortal sins;
+Confession sins;
 
 Create Mortal penance in the image of sins * 2;
-Enlighten penance;
+Revelation penance;
 
 Create Divine grace in the image of 3.14;
-Enlighten grace;
+Revelation grace;
 
 penance be transformed into 0;
-Enlighten penance;
+Revelation penance;
 
 Create Mortal trial in the image of 2 + 4 * (3 + 1) - 5 / 5;
-Enlighten trial;
+Revelation trial;
 ```
 
 # ⚡ Installation (The Ritual)

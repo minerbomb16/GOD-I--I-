@@ -4,10 +4,10 @@ prog: stat+ EOF
     ;
 
 stat: 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
-    | 'Summon' type ID ';'                         #declare
+    | 'Create' type ID ';'                         #declare
     | ID 'be transformed into' expr ';'            #assign
-    | 'Enlighten' expr ';'                         #write
-    | 'Hearken' ID ';'                             #read
+    | 'Revelation' expr ';'                        #write
+    | 'Confession' ID ';'                          #read
     ;
 
 type: 'Mortal' | 'Divine' ;
