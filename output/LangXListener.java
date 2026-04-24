@@ -158,4 +158,16 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMulDiv(LangXParser.MulDivContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code stringConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterStringConst(LangXParser.StringConstContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stringConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitStringConst(LangXParser.StringConstContext ctx);
 }

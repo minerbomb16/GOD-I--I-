@@ -14,20 +14,27 @@ Infallible Compilation: If thy code faileth to build, it is not the compiler tha
 Behold, a glimpse into the sacred scrolls of a .god file:
 
 ```
-Create Mortal sins;
-Confession sins;
+Create Mortal sin;
+Confess sin;
+Create Mortal sin2 in the image of sin * 2;
+Reveal sin2;
+sin2 be transformed into 0;
+Reveal sin2;
 
-Create Mortal penance in the image of sins * 2;
-Revelation penance;
+Create Divine grace;
+Confess grace;
+Create Divine grace2 in the image of grace * 3.14;
+Reveal grace2;
+grace2 be transformed into 2.0 + 4.2 * (3.0 + 1.0) - 5.0 / 5.0;
+Reveal grace2;
 
-Create Divine grace in the image of 3.14;
-Revelation grace;
-
-penance be transformed into 0;
-Revelation penance;
-
-Create Mortal trial in the image of 2 + 4 * (3 + 1) - 5 / 5;
-Revelation trial;
+Create Eternal glory;
+Confess glory;
+Reveal glory;
+Create Eternal glory2 in the image of "holy " + glory;
+Reveal glory2;
+glory2 be transformed into 3 + " is a value of " + 7.0;
+Reveal glory2;
 ```
 
 # ⚡ Installation (The Ritual)
@@ -42,7 +49,7 @@ git clone https://github.com/minerbomb/GOD-l--l-.git
 
 Perform the Consecration:
 ```
-.\run.bat
+.\pray.bat
 ```
 
 # ⚖️ The Commandments (License)

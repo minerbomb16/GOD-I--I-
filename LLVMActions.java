@@ -1,11 +1,22 @@
 import java.util.HashMap;
 import java.util.Stack;
 
-public class LLVMActions extends LangXBaseListener {
-    HashMap<String, String> variables = new HashMap<>(); 
-    Stack<String> valueStack = new Stack<>();
-    Stack<String> typeStack = new Stack<>();
+class Value {
+    public String name;
+    public String type;
+    public int length;
+    public Value(String name, String type, int length) {
+        this.name = name;
+        this.type = type;
+        this.length = length;
+    }
+}
 
+public class LLVMActions extends LangXBaseListener {
+    HashMap<String, Value> variables = new HashMap<>(); 
+    Stack<Value> stack = new Stack<>();
+    
+    static int BUFFER_SIZE = 256; 
 
     @Override
     public void exitProg(LangXParser.ProgContext ctx) {
@@ -18,17 +29,20 @@ public class LLVMActions extends LangXBaseListener {
         String type = ctx.type().getText();
         
         if (variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value " + ID + " is already declareted!");
+            System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
         
-        variables.put(ID, type);
+        Value val = stack.pop();
+        
+        if (!type.equals("Eternal") && !type.equals(val.type)) {
+             System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign " + val.type + " to " + type + ".");
+             System.exit(1);
+        }
+
+        variables.put(ID, new Value(ID, type, val.length));
         LLVMGenerator.declare(ID, type);
-        
-        String val = valueStack.pop();
-        String valType = typeStack.pop(); 
-        
-        LLVMGenerator.assign(ID, val, type);
+        LLVMGenerator.assign(ID, val.name, type);
     }
 
     @Override
@@ -37,11 +51,11 @@ public class LLVMActions extends LangXBaseListener {
         String type = ctx.type().getText();
         
         if (variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value " + ID + " is already declareted!");
+            System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
         
-        variables.put(ID, type);
+        variables.put(ID, new Value(ID, type, BUFFER_SIZE));
         LLVMGenerator.declare(ID, type);
     }
 
@@ -49,21 +63,25 @@ public class LLVMActions extends LangXBaseListener {
     public void exitAssign(LangXParser.AssignContext ctx) {
         String ID = ctx.ID().getText();
         if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value " + ID + " is already declareted!");
+            System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        String type = variables.get(ID);
-        String val = valueStack.pop();
-        typeStack.pop();
+        Value var = variables.get(ID);
+        Value val = stack.pop();
         
-        LLVMGenerator.assign(ID, val, type);
+        if (!var.type.equals("Eternal") && !var.type.equals(val.type)) {
+             System.err.println("Semantic error: Cannot assign " + val.type + " to " + var.type + ".");
+             System.exit(1);
+        }
+        
+        var.length = val.length; 
+        LLVMGenerator.assign(ID, val.name, var.type);
     }
 
     @Override
     public void exitWrite(LangXParser.WriteContext ctx) {
-        String val = valueStack.pop();
-        String type = typeStack.pop();
-        LLVMGenerator.print(val, type);
+        Value val = stack.pop();
+        LLVMGenerator.print(val.name, val.type);
     }
 
     @Override
@@ -73,20 +91,26 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        String type = variables.get(ID);
-        LLVMGenerator.read(ID, type);
+        Value var = variables.get(ID);
+        LLVMGenerator.read(ID, var.type, var.length);
     }
 
     @Override
     public void exitIntConst(LangXParser.IntConstContext ctx) {
-        valueStack.push(ctx.INT().getText());
-        typeStack.push("Mortal");
+        stack.push(new Value(ctx.INT().getText(), "Mortal", 0));
     }
 
     @Override
     public void exitRealConst(LangXParser.RealConstContext ctx) {
-        valueStack.push(ctx.REAL().getText());
-        typeStack.push("Divine");
+        stack.push(new Value(ctx.REAL().getText(), "Divine", 0));
+    }
+
+    @Override
+    public void exitStringConst(LangXParser.StringConstContext ctx) {
+        String raw = ctx.STRING().getText();
+        String content = raw.substring(1, raw.length() - 1);
+        String ptrReg = LLVMGenerator.constant_string(content);
+        stack.push(new Value(ptrReg, "Eternal", content.length()));
     }
 
     @Override
@@ -96,33 +120,68 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Value not declared " + ID);
             System.exit(1);
         }
-        String type = variables.get(ID);
-        LLVMGenerator.load(ID, type);
-        valueStack.push("%" + (LLVMGenerator.reg - 1));
-        typeStack.push(type);
+        Value var = variables.get(ID);
+        LLVMGenerator.load(ID, var.type);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
 
     @Override
     public void exitAddSub(LangXParser.AddSubContext ctx) {
-        String val2 = valueStack.pop();
-        String type2 = typeStack.pop();
-        String val1 = valueStack.pop();
-        String type1 = typeStack.pop();
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+        String op = ctx.op.getText();
         
-        LLVMGenerator.arithmetic(ctx.op.getText(), val1, val2, type1);
-        valueStack.push("%" + (LLVMGenerator.reg - 1));
-        typeStack.push(type1);
+        if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
+        } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (op.equals("+")) {
+            if (v1.type.equals("Eternal") && v2.type.equals("Eternal")) {
+                String res = LLVMGenerator.add_string(v1.name, v1.length, v2.name, v2.length);
+                stack.push(new Value(res, "Eternal", v1.length + v2.length));
+            } else if (v1.type.equals("Eternal") && v2.type.equals("Mortal")) {
+                String v2str = LLVMGenerator.int_to_string(v2.name, 16);
+                String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 16);
+                stack.push(new Value(res, "Eternal", v1.length + 16));
+            } else if (v1.type.equals("Mortal") && v2.type.equals("Eternal")) {
+                String v1str = LLVMGenerator.int_to_string(v1.name, 16);
+                String res = LLVMGenerator.add_string(v1str, 16, v2.name, v2.length);
+                stack.push(new Value(res, "Eternal", 16 + v2.length));
+            } else if (v1.type.equals("Eternal") && v2.type.equals("Divine")) {
+                String v2str = LLVMGenerator.double_to_string(v2.name, 32); // Więcej miejsca na miejsca po przecinku!
+                String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 32);
+                stack.push(new Value(res, "Eternal", v1.length + 32));
+            } else if (v1.type.equals("Divine") && v2.type.equals("Eternal")) {
+                String v1str = LLVMGenerator.double_to_string(v1.name, 32);
+                String res = LLVMGenerator.add_string(v1str, 32, v2.name, v2.length);
+                stack.push(new Value(res, "Eternal", 32 + v2.length));
+            } else {
+                System.err.println("Semantic error: Cannot combine " + v1.type + " and " + v2.type + ".");
+                System.exit(1);
+            }
+        } else {
+            System.err.println("Semantic error: Operator " + op + " not supported for these types.");
+            System.exit(1);
+        }
     }
 
     @Override
     public void exitMulDiv(LangXParser.MulDivContext ctx) {
-        String val2 = valueStack.pop();
-        String type2 = typeStack.pop();
-        String val1 = valueStack.pop();
-        String type1 = typeStack.pop();
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+        String op = ctx.op.getText();
         
-        LLVMGenerator.arithmetic(ctx.op.getText(), val1, val2, type1);
-        valueStack.push("%" + (LLVMGenerator.reg - 1));
-        typeStack.push(type1);
+        if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
+        } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else {
+            System.err.println("Semantic error: Cannot multiply/divide " + v1.type + " and " + v2.type + ".");
+            System.exit(1);
+        }
     }
 }
