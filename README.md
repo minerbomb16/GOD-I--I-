@@ -44,7 +44,7 @@ Humble thyself before the Command Line.
 
 Clone the Heavens:
 ```
-git clone https://github.com/minerbomb/GOD-l--l-.git
+git clone https://github.com/minerbomb16/GOD-l--l-.git
 ```
 
 Perform the Consecration:
