@@ -111,17 +111,17 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitVar(LangXParser.VarContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code realConst}
+	 * Enter a parse tree produced by the {@code logicOr}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterRealConst(LangXParser.RealConstContext ctx);
+	void enterLogicOr(LangXParser.LogicOrContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code realConst}
+	 * Exit a parse tree produced by the {@code logicOr}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitRealConst(LangXParser.RealConstContext ctx);
+	void exitLogicOr(LangXParser.LogicOrContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code trueConst}
 	 * labeled alternative in {@link LangXParser#expr}.
@@ -134,18 +134,6 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTrueConst(LangXParser.TrueConstContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code falseConst}
-	 * labeled alternative in {@link LangXParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterFalseConst(LangXParser.FalseConstContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code falseConst}
-	 * labeled alternative in {@link LangXParser#expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitFalseConst(LangXParser.FalseConstContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code addSub}
 	 * labeled alternative in {@link LangXParser#expr}.
@@ -182,6 +170,66 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMulDiv(LangXParser.MulDivContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code logicAnd}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterLogicAnd(LangXParser.LogicAndContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code logicAnd}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitLogicAnd(LangXParser.LogicAndContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code logicXor}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterLogicXor(LangXParser.LogicXorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code logicXor}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitLogicXor(LangXParser.LogicXorContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code logicNeg}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterLogicNeg(LangXParser.LogicNegContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code logicNeg}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitLogicNeg(LangXParser.LogicNegContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code realConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealConst(LangXParser.RealConstContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code realConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealConst(LangXParser.RealConstContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code falseConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterFalseConst(LangXParser.FalseConstContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code falseConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitFalseConst(LangXParser.FalseConstContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code stringConst}
 	 * labeled alternative in {@link LangXParser#expr}.
