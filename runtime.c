@@ -75,7 +75,7 @@ int readDogma() {
 
     scanf("%255s", buffer);
 
-    if (strcmp(buffer, "Heven") == 0 || strcmp(buffer, "1") == 0) {
+    if (strcmp(buffer, "Heaven") == 0 || strcmp(buffer, "1") == 0) {
         return 1;
     }
 
@@ -83,6 +83,6 @@ int readDogma() {
         return 0;
     }
 
-    printf("Runtime error: Dogma must be Heven, Hell, 1 or 0.\n");
+    printf("Runtime error: Dogma must be Heaven, Hell, 1 or 0.\n");
     exit(1);
 }

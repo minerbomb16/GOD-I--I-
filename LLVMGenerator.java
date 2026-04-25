@@ -181,7 +181,7 @@ class LLVMGenerator {
       }else if (type.equals("Eternal")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* " + valueReg + ")\n";
       } else if (type.equals("Dogma")) {
-         main_text += "    %" + reg + " = select i1 " + valueReg + ", i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0)" + ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)\n";
+         main_text += "    %" + reg + " = select i1 " + valueReg + ", i8* getelementptr inbounds ([7 x i8], [7 x i8]* @dogma_Heaven, i32 0, i32 0)" + ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)\n";
          String dogmaStrReg = "%" + reg;
          reg++;
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(" + "i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), "+ "i8* " + dogmaStrReg + ")\n";
@@ -198,6 +198,16 @@ class LLVMGenerator {
          print(valueReg, type);
       }
    }
+
+   static void printArrayRange(String id, String type, int size, int start, int end) {
+   for (int i = start; i <= end; i++) {
+      String address = getArrayElementAddress(id, type, size, Integer.toString(i));
+      loadArrayElement(address, type);
+
+      String valueReg = "%" + (reg - 1);
+      print(valueReg, type);
+   }
+}
 
    static void readArrayElement(String address, String type) {
       if (type.equals("Mortal")) {
@@ -312,7 +322,7 @@ class LLVMGenerator {
       text += "@strspi = constant [3 x i8] c\"%d\\00\"\n";
       text += "@strspf = constant [3 x i8] c\"%f\\00\"\n";
 
-      text += "@dogma_heven = constant [6 x i8] c\"Heven\\00\"\n";
+      text += "@dogma_Heaven = constant [7 x i8] c\"Heaven\\00\"\n";
       text += "@dogma_hell = constant [5 x i8] c\"Hell\\00\"\n";
 
       text += header_text + "\n";

@@ -65,6 +65,42 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitWriteId(LangXParser.WriteIdContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code writeArrayRange}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteArrayRange(LangXParser.WriteArrayRangeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeArrayRange}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteArrayRange(LangXParser.WriteArrayRangeContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code writeArrayFrom}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteArrayFrom(LangXParser.WriteArrayFromContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeArrayFrom}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteArrayFrom(LangXParser.WriteArrayFromContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code writeArrayTo}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteArrayTo(LangXParser.WriteArrayToContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeArrayTo}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteArrayTo(LangXParser.WriteArrayToContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code declareAndAssign}
 	 * labeled alternative in {@link LangXParser#stat}.
 	 * @param ctx the parse tree
