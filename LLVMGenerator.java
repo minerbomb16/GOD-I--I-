@@ -7,24 +7,31 @@ class LLVMGenerator {
    static void declare(String id, String type) {
       if (type.equals("Mortal")) main_text += "    %" + id + " = alloca i32\n";
       else if (type.equals("Divine")) main_text += "    %" + id + " = alloca double\n";
+      else if (type.equals("SmallDivine")) main_text += "    %" + id + " = alloca float\n";
       else if (type.equals("Eternal")) main_text += "    %" + id + " = alloca i8*\n"; // Zmienna Eternal jest tylko wskaźnikiem!
    }
 
    static void assign(String id, String valueReg, String type) {
       if (type.equals("Mortal")) main_text += "    store i32 " + valueReg + ", i32* %" + id + "\n";
       else if (type.equals("Divine")) main_text += "    store double " + valueReg + ", double* %" + id + "\n";
+      else if (type.equals("SmallDivine")) main_text += "    store float " + valueReg + ", float* %" + id + "\n";
       else if (type.equals("Eternal")) main_text += "    store i8* " + valueReg + ", i8** %" + id + "\n";
    }
 
    static void load(String id, String type) {
       if (type.equals("Mortal")) main_text += "    %" + reg + " = load i32, i32* %" + id + "\n";
       else if (type.equals("Divine")) main_text += "    %" + reg + " = load double, double* %" + id + "\n";
+      else if (type.equals("SmallDivine")) main_text += "    %" + reg + " = load float, float* %" + id + "\n";
       else if (type.equals("Eternal")) main_text += "    %" + reg + " = load i8*, i8** %" + id + "\n";
       reg++;
    }
 
    static void arithmetic(String op, String val1, String val2, String type) {
-      String llvmType = type.equals("Mortal") ? "i32" : "double";
+      String llvmType = "";
+      if (type.equals("Mortal")) llvmType = "i32";
+      else if (type.equals("Divine")) llvmType = "double";
+      else if (type.equals("SmallDivine")) llvmType = "float";
+
       String inst = "";
       if (type.equals("Mortal")) {
          if (op.equals("+")) inst = "add";
@@ -95,15 +102,62 @@ class LLVMGenerator {
       return newStrPtr;
    }
 
+   static String double_to_float(String valReg) {
+      main_text += "    %" + reg + " = fptrunc double " + valReg + " to float\n";
+      String newReg = "%" + reg;
+      reg++;
+      return newReg;
+   }
+
+   static String float_to_double(String valReg) {
+      main_text += "    %" + reg + " = fpext float " + valReg + " to double\n";
+      String newReg = "%" + reg;
+      reg++;
+      return newReg;
+   }
+
+   static String float_to_string(String in, int lout) {
+      allocate_string("str" + str, lout);
+      main_text += "    %" + reg + " = getelementptr inbounds [" + (lout + 1) + " x i8], [" + (lout + 1) + " x i8]* %str" + str + ", i32 0, i32 0\n";
+      String newStrPtr = "%" + reg;
+      reg++;
+      str++;
+      main_text += "    %" + reg + " = fpext float " + in + " to double\n";
+      String extendedReg = "%" + reg;
+      reg++;
+      main_text += "    %" + reg + " = call i32 (i8*, i8*, ...) @sprintf(i8* " 
+            + newStrPtr 
+            + ", i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspf, i32 0, i32 0), double " 
+            + extendedReg 
+            + ")\n";
+      reg++;
+      return newStrPtr;
+   }
+
    static void print(String valueReg, String type) {
       if (type.equals("Mortal")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 " + valueReg + ")\n";
       } else if (type.equals("Divine")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double " + valueReg + ")\n";
-      } else if (type.equals("Eternal")) {
+      }else if (type.equals("SmallDivine")) {
+         String extendedReg = float_to_double(valueReg);
+         main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double " + extendedReg + ")\n";
+      }else if (type.equals("Eternal")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* " + valueReg + ")\n";
       }
       reg++;
+   }
+
+   static void readSmallReal(String id) {
+      main_text += "    %" + reg + " = alloca double\n";
+      String tmpPtr = "%" + reg;
+      reg++;
+      main_text += "    call void @readReal(double* " + tmpPtr + ")\n";
+      main_text += "    %" + reg + " = load double, double* " + tmpPtr + "\n";
+      String loadedReg = "%" + reg;
+      reg++;
+      String convertedReg = double_to_float(loadedReg);
+      main_text += "    store float " + convertedReg + ", float* %" + id + "\n";
    }
 
    static void read(String id, String type, int length) {
@@ -111,6 +165,8 @@ class LLVMGenerator {
          main_text += "    call void @readInt(i32* %" + id + ")\n";
       } else if (type.equals("Divine")) {
          main_text += "    call void @readReal(double* %" + id + ")\n";
+      } else if (type.equals("SmallDivine")) {
+        readSmallReal(id);
       } else if (type.equals("Eternal")) {
          allocate_string("str" + str, length);
          main_text += "    %" + reg + " = getelementptr inbounds [" + (length + 1) + " x i8], [" + (length + 1) + " x i8]* %str" + str + ", i32 0, i32 0\n";

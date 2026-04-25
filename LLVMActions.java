@@ -34,15 +34,22 @@ public class LLVMActions extends LangXBaseListener {
         }
         
         Value val = stack.pop();
+        String finalValueReg = val.name;
         
-        if (!type.equals("Eternal") && !type.equals(val.type)) {
-             System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign " + val.type + " to " + type + ".");
-             System.exit(1);
+        if (!type.equals(val.type)) {
+            if (type.equals("SmallDivine") && val.type.equals("Divine")) {
+                finalValueReg = LLVMGenerator.double_to_float(val.name);
+            } else if (type.equals("Divine") && val.type.equals("SmallDivine")) {
+                finalValueReg = LLVMGenerator.float_to_double(val.name);
+            } else {
+                System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign " + val.type + " to " + type + ".");
+                System.exit(1);
+            }
         }
 
         variables.put(ID, new Value(ID, type, val.length));
         LLVMGenerator.declare(ID, type);
-        LLVMGenerator.assign(ID, val.name, type);
+        LLVMGenerator.assign(ID, finalValueReg, type);
     }
 
     @Override
@@ -69,13 +76,20 @@ public class LLVMActions extends LangXBaseListener {
         Value var = variables.get(ID);
         Value val = stack.pop();
         
-        if (!var.type.equals("Eternal") && !var.type.equals(val.type)) {
-             System.err.println("Semantic error: Cannot assign " + val.type + " to " + var.type + ".");
-             System.exit(1);
+        String finalValueReg = val.name;
+        if (!var.type.equals(val.type)) {
+            if (var.type.equals("SmallDivine") && val.type.equals("Divine")) {
+                finalValueReg = LLVMGenerator.double_to_float(val.name);
+            } else if (var.type.equals("Divine") && val.type.equals("SmallDivine")) {
+                finalValueReg = LLVMGenerator.float_to_double(val.name);
+            } else {
+                System.err.println("Semantic error: Cannot assign " + val.type + " to " + var.type + ".");
+                System.exit(1);
+            }
         }
         
         var.length = val.length; 
-        LLVMGenerator.assign(ID, val.name, var.type);
+        LLVMGenerator.assign(ID, finalValueReg, var.type);
     }
 
     @Override
@@ -137,6 +151,17 @@ public class LLVMActions extends LangXBaseListener {
         } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
             LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "SmallDivine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
+            String extendedV1 = LLVMGenerator.float_to_double(v1.name);
+            LLVMGenerator.arithmetic(op, extendedV1, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
+            String extendedV2 = LLVMGenerator.float_to_double(v2.name);
+            LLVMGenerator.arithmetic(op, v1.name, extendedV2, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
         } else if (op.equals("+")) {
             if (v1.type.equals("Eternal") && v2.type.equals("Eternal")) {
                 String res = LLVMGenerator.add_string(v1.name, v1.length, v2.name, v2.length);
@@ -145,19 +170,28 @@ public class LLVMActions extends LangXBaseListener {
                 String v2str = LLVMGenerator.int_to_string(v2.name, 16);
                 String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 16);
                 stack.push(new Value(res, "Eternal", v1.length + 16));
-            } else if (v1.type.equals("Mortal") && v2.type.equals("Eternal")) {
-                String v1str = LLVMGenerator.int_to_string(v1.name, 16);
-                String res = LLVMGenerator.add_string(v1str, 16, v2.name, v2.length);
-                stack.push(new Value(res, "Eternal", 16 + v2.length));
             } else if (v1.type.equals("Eternal") && v2.type.equals("Divine")) {
                 String v2str = LLVMGenerator.double_to_string(v2.name, 32); // Więcej miejsca na miejsca po przecinku!
                 String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 32);
                 stack.push(new Value(res, "Eternal", v1.length + 32));
+            } else if (v1.type.equals("Eternal") && v2.type.equals("SmallDivine")) {
+                String v2str = LLVMGenerator.float_to_string(v2.name, 32); 
+                String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 32);
+                stack.push(new Value(res, "Eternal", v1.length + 32));
+            }
+            else if (v1.type.equals("Mortal") && v2.type.equals("Eternal")) {
+                String v1str = LLVMGenerator.int_to_string(v1.name, 16);
+                String res = LLVMGenerator.add_string(v1str, 16, v2.name, v2.length);
+                stack.push(new Value(res, "Eternal", 16 + v2.length));
             } else if (v1.type.equals("Divine") && v2.type.equals("Eternal")) {
                 String v1str = LLVMGenerator.double_to_string(v1.name, 32);
                 String res = LLVMGenerator.add_string(v1str, 32, v2.name, v2.length);
                 stack.push(new Value(res, "Eternal", 32 + v2.length));
-            } else {
+           } else if (v1.type.equals("SmallDivine") && v2.type.equals("Eternal")) {
+                String v1str = LLVMGenerator.float_to_string(v1.name, 32);
+                String res = LLVMGenerator.add_string(v1str, 32, v2.name, v2.length);
+                stack.push(new Value(res, "Eternal", 32 + v2.length));
+            }else {
                 System.err.println("Semantic error: Cannot combine " + v1.type + " and " + v2.type + ".");
                 System.exit(1);
             }
@@ -178,6 +212,17 @@ public class LLVMActions extends LangXBaseListener {
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
         } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
             LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "SmallDivine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
+            String extendedV1 = LLVMGenerator.float_to_double(v1.name);
+            LLVMGenerator.arithmetic(op, extendedV1, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
+            String extendedV2 = LLVMGenerator.float_to_double(v2.name);
+            LLVMGenerator.arithmetic(op, v1.name, extendedV2, "Divine");
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
         } else {
             System.err.println("Semantic error: Cannot multiply/divide " + v1.type + " and " + v2.type + ".");

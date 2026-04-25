@@ -10,7 +10,7 @@ stat: 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
     | 'Confess' ID ';'                             #read
     ;
 
-type: 'Mortal' | 'Divine' | 'Eternal' ;
+type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' ;
 
 expr: expr op=('*' | '/') expr #mulDiv
     | expr op=('+' | '-') expr #addSub
