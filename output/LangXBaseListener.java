@@ -28,6 +28,54 @@ public class LangXBaseListener implements LangXListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDeclareArray(LangXParser.DeclareArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclareArray(LangXParser.DeclareArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignArrayElem(LangXParser.AssignArrayElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignArrayElem(LangXParser.AssignArrayElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterReadArrayElem(LangXParser.ReadArrayElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWriteId(LangXParser.WriteIdContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWriteId(LangXParser.WriteIdContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDeclareAndAssign(LangXParser.DeclareAndAssignContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -95,6 +143,18 @@ public class LangXBaseListener implements LangXListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitType(LangXParser.TypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArrayElem(LangXParser.ArrayElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrayElem(LangXParser.ArrayElemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -4,31 +4,64 @@ class LLVMGenerator {
    static int reg = 1;
    static int str = 1;
 
+   static String llvmType(String type) {
+      if (type.equals("Mortal")) return "i32";
+      if (type.equals("Divine")) return "double";
+      if (type.equals("SmallDivine")) return "float";
+      if (type.equals("Dogma")) return "i1";
+      if (type.equals("Eternal")) return "i8*";
+
+      System.err.println("Internal error: unknown LLVM type " + type);
+      System.exit(1);
+      return "";
+   }
+
    static void declare(String id, String type) {
-      if (type.equals("Mortal")) main_text += "    %" + id + " = alloca i32\n";
-      else if (type.equals("Divine")) main_text += "    %" + id + " = alloca double\n";
-      else if (type.equals("SmallDivine")) main_text += "    %" + id + " = alloca float\n";
-      else if (type.equals("Eternal")) main_text += "    %" + id + " = alloca i8*\n"; // Zmienna Eternal jest tylko wskaźnikiem!
-      else if (type.equals("Dogma")) main_text += "    %" + id + " = alloca i1\n";
+      String llvmType = llvmType(type);
+      main_text += "    %" + id + " = alloca " + llvmType + "\n";
    }
 
    static void assign(String id, String valueReg, String type) {
-      if (type.equals("Mortal")) main_text += "    store i32 " + valueReg + ", i32* %" + id + "\n";
-      else if (type.equals("Divine")) main_text += "    store double " + valueReg + ", double* %" + id + "\n";
-      else if (type.equals("SmallDivine")) main_text += "    store float " + valueReg + ", float* %" + id + "\n";
-      else if (type.equals("Eternal")) main_text += "    store i8* " + valueReg + ", i8** %" + id + "\n";
-      else if (type.equals("Dogma")) main_text += "    store i1 " + valueReg + ", i1* %" + id + "\n";
+      String llvmType = llvmType(type);
+      main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* %" + id + "\n";
    }
 
    static void load(String id, String type) {
-      if (type.equals("Mortal")) main_text += "    %" + reg + " = load i32, i32* %" + id + "\n";
-      else if (type.equals("Divine")) main_text += "    %" + reg + " = load double, double* %" + id + "\n";
-      else if (type.equals("SmallDivine")) main_text += "    %" + reg + " = load float, float* %" + id + "\n";
-      else if (type.equals("Eternal")) main_text += "    %" + reg + " = load i8*, i8** %" + id + "\n";
-      else if (type.equals("Dogma")) main_text += "    %" + reg + " = load i1, i1* %" + id + "\n";
+      String llvmType = llvmType(type);
+      main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* %" + id + "\n";
       reg++;
    }
 
+  static void declareArray(String id, String type, int size) {
+      String llvmType = llvmType(type);
+      main_text += "    %" + id + " = alloca [" + size + " x " + llvmType + "]\n";
+   }
+
+   static String getArrayElementAddress(String id, String type, int size, String indexReg) {
+      String llvmType = llvmType(type);
+
+      main_text += "    %" + reg + " = getelementptr inbounds ["
+            + size + " x " + llvmType + "], ["
+            + size + " x " + llvmType + "]* %" + id
+            + ", i32 0, i32 " + indexReg + "\n";
+
+      String address = "%" + reg;
+      reg++;
+      return address;
+   }
+
+   static void assignArrayElement(String address, String valueReg, String type) {
+      String llvmType = llvmType(type);
+      main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* " + address + "\n";
+   }
+
+   static void loadArrayElement(String address, String type) {
+      String llvmType = llvmType(type);
+      main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* " + address + "\n";
+      reg++;
+   }
+
+   
    static void arithmetic(String op, String val1, String val2, String type) {
       String llvmType = "";
       if (type.equals("Mortal")) llvmType = "i32";
@@ -151,10 +184,31 @@ class LLVMGenerator {
          main_text += "    %" + reg + " = select i1 " + valueReg + ", i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0)" + ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)\n";
          String dogmaStrReg = "%" + reg;
          reg++;
-
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(" + "i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), "+ "i8* " + dogmaStrReg + ")\n";
       }
-            reg++;
+      reg++;
+   }
+
+   static void printArray(String id, String type, int size) {
+      for (int i = 0; i < size; i++) {
+         String address = getArrayElementAddress(id, type, size, Integer.toString(i));
+         loadArrayElement(address, type);
+
+         String valueReg = "%" + (reg - 1);
+         print(valueReg, type);
+      }
+   }
+
+   static void readArrayElement(String address, String type) {
+      if (type.equals("Mortal")) {
+         main_text += "    call void @readInt(i32* " + address + ")\n";
+      } else if (type.equals("Divine")) {
+         main_text += "    call void @readReal(double* " + address + ")\n";
+      } else if (type.equals("SmallDivine")) {
+         readSmallRealToAddress(address);
+      } else if (type.equals("Dogma")) {
+         readDogmaToAddress(address);
+      }
    }
 
    static void readSmallReal(String id) {
@@ -173,11 +227,9 @@ class LLVMGenerator {
       main_text += "    %" + reg + " = call i32 @readDogma()\n";
       String intReg = "%" + reg;
       reg++;
-
       main_text += "    %" + reg + " = icmp ne i32 " + intReg + ", 0\n";
       String boolReg = "%" + reg;
       reg++;
-
       main_text += "    store i1 " + boolReg + ", i1* %" + id + "\n";
    }
 
@@ -199,6 +251,28 @@ class LLVMGenerator {
       } else if (type.equals("Dogma")) {
          readDogma(id);
       }
+   }
+
+   static void readSmallRealToAddress(String address) {
+      main_text += "    %" + reg + " = alloca double\n";
+      String tmpPtr = "%" + reg;
+      reg++;
+      main_text += "    call void @readReal(double* " + tmpPtr + ")\n";
+      main_text += "    %" + reg + " = load double, double* " + tmpPtr + "\n";
+      String loadedReg = "%" + reg;
+      reg++;
+      String convertedReg = double_to_float(loadedReg);
+      main_text += "    store float " + convertedReg + ", float* " + address + "\n";
+   }
+
+    static void readDogmaToAddress(String address) {
+      main_text += "    %" + reg + " = call i32 @readDogma()\n";
+      String intReg = "%" + reg;
+      reg++;
+      main_text += "    %" + reg + " = icmp ne i32 " + intReg + ", 0\n";
+      String boolReg = "%" + reg;
+      reg++;
+      main_text += "    store i1 " + boolReg + ", i1* " + address + "\n";
    }
 
    static void logic(String op, String val1, String val2) {
