@@ -9,6 +9,7 @@ class LLVMGenerator {
       else if (type.equals("Divine")) main_text += "    %" + id + " = alloca double\n";
       else if (type.equals("SmallDivine")) main_text += "    %" + id + " = alloca float\n";
       else if (type.equals("Eternal")) main_text += "    %" + id + " = alloca i8*\n"; // Zmienna Eternal jest tylko wskaźnikiem!
+      else if (type.equals("Dogma")) main_text += "    %" + id + " = alloca i1\n";
    }
 
    static void assign(String id, String valueReg, String type) {
@@ -16,6 +17,7 @@ class LLVMGenerator {
       else if (type.equals("Divine")) main_text += "    store double " + valueReg + ", double* %" + id + "\n";
       else if (type.equals("SmallDivine")) main_text += "    store float " + valueReg + ", float* %" + id + "\n";
       else if (type.equals("Eternal")) main_text += "    store i8* " + valueReg + ", i8** %" + id + "\n";
+      else if (type.equals("Dogma")) main_text += "    store i1 " + valueReg + ", i1* %" + id + "\n";
    }
 
    static void load(String id, String type) {
@@ -23,6 +25,7 @@ class LLVMGenerator {
       else if (type.equals("Divine")) main_text += "    %" + reg + " = load double, double* %" + id + "\n";
       else if (type.equals("SmallDivine")) main_text += "    %" + reg + " = load float, float* %" + id + "\n";
       else if (type.equals("Eternal")) main_text += "    %" + reg + " = load i8*, i8** %" + id + "\n";
+      else if (type.equals("Dogma")) main_text += "    %" + reg + " = load i1, i1* %" + id + "\n";
       reg++;
    }
 
@@ -144,8 +147,14 @@ class LLVMGenerator {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double " + extendedReg + ")\n";
       }else if (type.equals("Eternal")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* " + valueReg + ")\n";
+      } else if (type.equals("Dogma")) {
+         main_text += "    %" + reg + " = select i1 " + valueReg + ", i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0)" + ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)\n";
+         String dogmaStrReg = "%" + reg;
+         reg++;
+
+         main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(" + "i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), "+ "i8* " + dogmaStrReg + ")\n";
       }
-      reg++;
+            reg++;
    }
 
    static void readSmallReal(String id) {
@@ -158,6 +167,18 @@ class LLVMGenerator {
       reg++;
       String convertedReg = double_to_float(loadedReg);
       main_text += "    store float " + convertedReg + ", float* %" + id + "\n";
+   }
+
+   static void readDogma(String id) {
+      main_text += "    %" + reg + " = call i32 @readDogma()\n";
+      String intReg = "%" + reg;
+      reg++;
+
+      main_text += "    %" + reg + " = icmp ne i32 " + intReg + ", 0\n";
+      String boolReg = "%" + reg;
+      reg++;
+
+      main_text += "    store i1 " + boolReg + ", i1* %" + id + "\n";
    }
 
    static void read(String id, String type, int length) {
@@ -175,6 +196,8 @@ class LLVMGenerator {
          main_text += "    store i8* " + buffPtr + ", i8** %" + id + "\n"; 
          str++;
          main_text += "    call void @readString(i8* " + buffPtr + ")\n";
+      } else if (type.equals("Dogma")) {
+         readDogma(id);
       }
    }
 
@@ -184,6 +207,7 @@ class LLVMGenerator {
       text += "declare void @readInt(i32*)\n";
       text += "declare void @readReal(double*)\n";
       text += "declare void @readString(i8*)\n";
+      text += "declare i32 @readDogma()\n";
 
       text += "declare i32 @sprintf(i8*, i8*, ...)\n";
       text += "declare i8* @strcpy(i8*, i8*)\n";
@@ -195,6 +219,9 @@ class LLVMGenerator {
       text += "@strps = constant [4 x i8] c\"%s\\0A\\00\"\n";
       text += "@strspi = constant [3 x i8] c\"%d\\00\"\n";
       text += "@strspf = constant [3 x i8] c\"%f\\00\"\n";
+
+      text += "@dogma_heven = constant [6 x i8] c\"Heven\\00\"\n";
+      text += "@dogma_hell = constant [5 x i8] c\"Hell\\00\"\n";
 
       text += header_text + "\n";
       text += "define i32 @main() {\n";

@@ -10,10 +10,12 @@ stat: 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
     | 'Confess' ID ';'                             #read
     ;
 
-type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' ;
+type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' | 'Dogma';
 
 expr: expr op=('*' | '/') expr #mulDiv
     | expr op=('+' | '-') expr #addSub
+    | 'Heven'                  #trueConst
+    | 'Hell'                   #falseConst
     | INT                      #intConst
     | REAL                     #realConst
     | STRING                   #stringConst

@@ -69,3 +69,20 @@ void printString(char* ptr) {
 void copyString(char* dest, char* src) {
     strcpy(dest, src);
 }
+
+int readDogma() {
+    char buffer[256];
+
+    scanf("%255s", buffer);
+
+    if (strcmp(buffer, "Heven") == 0 || strcmp(buffer, "1") == 0) {
+        return 1;
+    }
+
+    if (strcmp(buffer, "Hell") == 0 || strcmp(buffer, "0") == 0) {
+        return 0;
+    }
+
+    printf("Runtime error: Dogma must be Heven, Hell, 1 or 0.\n");
+    exit(1);
+}

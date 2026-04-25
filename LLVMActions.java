@@ -18,6 +18,17 @@ public class LLVMActions extends LangXBaseListener {
     
     static int BUFFER_SIZE = 256; 
 
+    private String mortal_to_dogma(Value val, int line) {
+        if (val.name.equals("0")) return "false";
+        if (val.name.equals("1")) return "true";
+
+        System.err.println(
+            "Semantic error (line " + line + "): Dogma can be assigned only Heven, Hell, 0 or 1."
+        );
+        System.exit(1);
+        return "";
+    }
+
     @Override
     public void exitProg(LangXParser.ProgContext ctx) {
         System.out.println(LLVMGenerator.generate());
@@ -35,13 +46,15 @@ public class LLVMActions extends LangXBaseListener {
         
         Value val = stack.pop();
         String finalValueReg = val.name;
-        
+
         if (!type.equals(val.type)) {
             if (type.equals("SmallDivine") && val.type.equals("Divine")) {
                 finalValueReg = LLVMGenerator.double_to_float(val.name);
             } else if (type.equals("Divine") && val.type.equals("SmallDivine")) {
                 finalValueReg = LLVMGenerator.float_to_double(val.name);
-            } else {
+            } else if (type.equals("Dogma") && val.type.equals("Mortal")) {
+                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
+            }else {
                 System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign " + val.type + " to " + type + ".");
                 System.exit(1);
             }
@@ -82,6 +95,8 @@ public class LLVMActions extends LangXBaseListener {
                 finalValueReg = LLVMGenerator.double_to_float(val.name);
             } else if (var.type.equals("Divine") && val.type.equals("SmallDivine")) {
                 finalValueReg = LLVMGenerator.float_to_double(val.name);
+            } else if (var.type.equals("Dogma") && val.type.equals("Mortal")) {
+                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
             } else {
                 System.err.println("Semantic error: Cannot assign " + val.type + " to " + var.type + ".");
                 System.exit(1);
@@ -90,6 +105,16 @@ public class LLVMActions extends LangXBaseListener {
         
         var.length = val.length; 
         LLVMGenerator.assign(ID, finalValueReg, var.type);
+    }
+
+    @Override
+    public void exitTrueConst(LangXParser.TrueConstContext ctx) {
+        stack.push(new Value("true", "Dogma", 0));
+    }
+
+    @Override
+    public void exitFalseConst(LangXParser.FalseConstContext ctx) {
+        stack.push(new Value("false", "Dogma", 0));
     }
 
     @Override
