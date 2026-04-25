@@ -17,6 +17,54 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitProg(LangXParser.ProgContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declareArray}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclareArray(LangXParser.DeclareArrayContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declareArray}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclareArray(LangXParser.DeclareArrayContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code assignArrayElem}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignArrayElem(LangXParser.AssignArrayElemContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code assignArrayElem}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignArrayElem(LangXParser.AssignArrayElemContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code readArrayElem}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterReadArrayElem(LangXParser.ReadArrayElemContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code readArrayElem}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code writeId}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteId(LangXParser.WriteIdContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeId}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteId(LangXParser.WriteIdContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code declareAndAssign}
 	 * labeled alternative in {@link LangXParser#stat}.
 	 * @param ctx the parse tree
@@ -86,6 +134,18 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitType(LangXParser.TypeContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code arrayElem}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayElem(LangXParser.ArrayElemContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code arrayElem}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayElem(LangXParser.ArrayElemContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code parens}
 	 * labeled alternative in {@link LangXParser#expr}.

@@ -5,10 +5,24 @@ class Value {
     public String name;
     public String type;
     public int length;
+
+    public boolean isArray;
+    public int arraySize;
+
     public Value(String name, String type, int length) {
         this.name = name;
         this.type = type;
         this.length = length;
+        this.isArray = false;
+        this.arraySize = 0;
+    }
+
+    public Value(String name, String type, int length, boolean isArray, int arraySize) {
+        this.name = name;
+        this.type = type;
+        this.length = length;
+        this.isArray = isArray;
+        this.arraySize = arraySize;
     }
 }
 
@@ -131,6 +145,10 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
+        if (var.isArray) {
+            System.err.println("Semantic error: Cannot Confess whole array " + ID + ". Use " + ID + "[index].");
+            System.exit(1);
+        }
         LLVMGenerator.read(ID, var.type, var.length);
     }
 
@@ -160,6 +178,10 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
+        if (var.isArray) {
+            System.err.println("Semantic error: Array " + ID + " requires index.");
+            System.exit(1);
+        }
         LLVMGenerator.load(ID, var.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
@@ -308,5 +330,122 @@ public class LLVMActions extends LangXBaseListener {
 
         LLVMGenerator.logicNeg(v.name);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+    @Override
+    public void exitDeclareArray(LangXParser.DeclareArrayContext ctx) {
+        String ID = ctx.ID().getText();
+        String type = ctx.type().getText();
+        int size = Integer.parseInt(ctx.INT().getText());
+
+        if (variables.containsKey(ID)) {
+            System.err.println("Semantic error: Value " + ID + " is already declared!");
+            System.exit(1);
+        }
+
+        if (type.equals("Eternal")) {
+            System.err.println("Semantic error: Eternal arrays are not supported yet.");
+            System.exit(1);
+        }
+
+        if (size <= 0) {
+            System.err.println("Semantic error: Array size must be greater than 0.");
+            System.exit(1);
+        }
+
+        variables.put(ID, new Value(ID, type, 0, true, size));
+        LLVMGenerator.declareArray(ID, type, size);
+    }
+
+    @Override
+    public void exitArrayElem(LangXParser.ArrayElemContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        Value index = stack.pop();
+        if (!index.type.equals("Mortal")) {
+            System.err.println("Semantic error: Array index must be Mortal.");
+            System.exit(1);
+        }
+        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        LLVMGenerator.loadArrayElement(address, arr.type);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), arr.type, 0));
+    }
+
+    @Override
+    public void exitAssignArrayElem(LangXParser.AssignArrayElemContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        Value val = stack.pop();
+        Value index = stack.pop();
+        if (!index.type.equals("Mortal")) {
+            System.err.println("Semantic error: Array index must be Mortal.");
+            System.exit(1);
+        }
+        String finalValueReg = val.name;
+        if (!arr.type.equals(val.type)) {
+            if (arr.type.equals("SmallDivine") && val.type.equals("Divine")) {
+                finalValueReg = LLVMGenerator.double_to_float(val.name);
+            } else if (arr.type.equals("Divine") && val.type.equals("SmallDivine")) {
+                finalValueReg = LLVMGenerator.float_to_double(val.name);
+            } else if (arr.type.equals("Dogma") && val.type.equals("Mortal")) {
+                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
+            } else {
+                System.err.println("Semantic error: Cannot assign " + val.type + " to array of " + arr.type + ".");
+                System.exit(1);
+            }
+        }
+        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        LLVMGenerator.assignArrayElement(address, finalValueReg, arr.type);
+    }
+
+    @Override
+    public void exitWriteId(LangXParser.WriteIdContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Value " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value val = variables.get(ID);
+        if (val.isArray) {
+            LLVMGenerator.printArray(ID, val.type, val.arraySize);
+        } else {
+            LLVMGenerator.load(ID, val.type);
+            LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), val.type);
+        }
+    }
+    @Override
+    public void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        Value index = stack.pop();
+        if (!index.type.equals("Mortal")) {
+            System.err.println("Semantic error: Array index must be Mortal.");
+            System.exit(1);
+        }
+        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        LLVMGenerator.readArrayElement(address, arr.type);
     }
 }

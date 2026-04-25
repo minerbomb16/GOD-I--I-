@@ -3,7 +3,11 @@ grammar LangX;
 prog: stat+ EOF 
     ;
 
-stat: 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
+stat: 'Create' type ID '[' INT ']' ';'                    #declareArray
+    | ID '[' expr ']' 'be transformed into' expr ';'       #assignArrayElem
+    | 'Confess' ID '[' expr ']' ';'                        #readArrayElem
+    | 'Reveal' ID ';'                                      #writeId
+    | 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
     | 'Create' type ID ';'                         #declare
     | ID 'be transformed into' expr ';'            #assign
     | 'Reveal' expr ';'                            #write
@@ -18,6 +22,7 @@ expr: 'NEG' expr                 #logicNeg
     | expr op='AND' expr         #logicAnd
     | expr op='OR' expr          #logicOr
     | expr op='XOR' expr         #logicXor
+    | ID '[' expr ']'            #arrayElem
     | 'Heven'                  #trueConst
     | 'Hell'                   #falseConst
     | INT                      #intConst

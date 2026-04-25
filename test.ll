@@ -16,84 +16,102 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8* noalias nocapture writeonly, i8* noa
 @dogma_hell = constant [5 x i8] c"Hell\00"
 
 define i32 @main() {
-    %x = alloca i1
-    store i1 true, i1* %x
-    %1 = load i1, i1* %x
-    %2 = select i1 %1, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %2)
-    store i1 false, i1* %x
-    %4 = load i1, i1* %x
-    %5 = select i1 %4, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %5)
-    %x2 = alloca i1
-    store i1 true, i1* %x2
-    %7 = load i1, i1* %x2
-    %8 = select i1 %7, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %9 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %8)
-    store i1 false, i1* %x2
-    %10 = load i1, i1* %x2
-    %11 = select i1 %10, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %11)
-    %x3 = alloca i1
-    %13 = call i32 @readDogma()
-    %14 = icmp ne i32 %13, 0
-    store i1 %14, i1* %x3
-    %15 = load i1, i1* %x3
-    %16 = select i1 %15, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %17 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %16)
-    %a = alloca i1
-    store i1 true, i1* %a
-    %b = alloca i1
-    store i1 false, i1* %b
-    %18 = load i1, i1* %a
-    %19 = load i1, i1* %b
-    %20 = and i1 %18, %19
-    %c = alloca i1
-    store i1 %20, i1* %c
-    %21 = load i1, i1* %c
-    %22 = select i1 %21, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %23 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %22)
-    %24 = load i1, i1* %a
-    %25 = load i1, i1* %b
-    %26 = or i1 %24, %25
-    %d = alloca i1
-    store i1 %26, i1* %d
-    %27 = load i1, i1* %d
-    %28 = select i1 %27, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %29 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %28)
-    %30 = load i1, i1* %a
-    %31 = load i1, i1* %b
-    %32 = xor i1 %30, %31
-    %e = alloca i1
-    store i1 %32, i1* %e
-    %33 = load i1, i1* %e
-    %34 = select i1 %33, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %35 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %34)
-    %36 = load i1, i1* %a
-    %37 = xor i1 %36, true
-    %f = alloca i1
-    store i1 %37, i1* %f
-    %38 = load i1, i1* %f
-    %39 = select i1 %38, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %40 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %39)
-    %41 = load i1, i1* %b
-    %42 = xor i1 %41, true
-    %g = alloca i1
-    store i1 %42, i1* %g
-    %43 = load i1, i1* %g
-    %44 = select i1 %43, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %45 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %44)
-    %46 = load i1, i1* %a
-    %47 = load i1, i1* %a
-    %48 = and i1 %46, %47
-    %49 = load i1, i1* %a
-    %50 = xor i1 %49, true
-    %51 = and i1 %48, %50
-    %h = alloca i1
-    store i1 %51, i1* %h
-    %52 = load i1, i1* %h
-    %53 = select i1 %52, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
-    %54 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %53)
+    %newsins = alloca [3 x i32]
+    %1 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 0
+    call void @readInt(i32* %1)
+    %2 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 1
+    call void @readInt(i32* %2)
+    %3 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 0
+    %4 = load i32, i32* %3
+    %5 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 1
+    %6 = load i32, i32* %5
+    %7 = add i32 %4, %6
+    %8 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 2
+    store i32 %7, i32* %8
+    %9 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 0
+    %10 = load i32, i32* %9
+    %11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %10)
+    %12 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 1
+    %13 = load i32, i32* %12
+    %14 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %13)
+    %15 = getelementptr inbounds [3 x i32], [3 x i32]* %newsins, i32 0, i32 2
+    %16 = load i32, i32* %15
+    %17 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %16)
+    %sins = alloca [3 x i32]
+    %18 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 0
+    store i32 10, i32* %18
+    %19 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 1
+    store i32 20, i32* %19
+    %20 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 0
+    %21 = load i32, i32* %20
+    %22 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 1
+    %23 = load i32, i32* %22
+    %24 = add i32 %21, %23
+    %25 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 2
+    store i32 %24, i32* %25
+    %26 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 2
+    %27 = load i32, i32* %26
+    %28 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %27)
+    %29 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 0
+    %30 = load i32, i32* %29
+    %31 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %30)
+    %32 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 1
+    %33 = load i32, i32* %32
+    %34 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %33)
+    %35 = getelementptr inbounds [3 x i32], [3 x i32]* %sins, i32 0, i32 2
+    %36 = load i32, i32* %35
+    %37 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %36)
+    %graces = alloca [3 x double]
+    %38 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 0
+    store double 3.14, double* %38
+    %39 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 0
+    %40 = load double, double* %39
+    %41 = fmul double %40, 2.0
+    %42 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 1
+    store double %41, double* %42
+    %43 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 2
+    call void @readReal(double* %43)
+    %44 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 0
+    %45 = load double, double* %44
+    %46 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %45)
+    %47 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 1
+    %48 = load double, double* %47
+    %49 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %48)
+    %50 = getelementptr inbounds [3 x double], [3 x double]* %graces, i32 0, i32 2
+    %51 = load double, double* %50
+    %52 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %51)
+    %smalls = alloca [2 x float]
+    %53 = fptrunc double 1.5 to float
+    %54 = getelementptr inbounds [2 x float], [2 x float]* %smalls, i32 0, i32 0
+    store float %53, float* %54
+    %55 = getelementptr inbounds [2 x float], [2 x float]* %smalls, i32 0, i32 0
+    %56 = load float, float* %55
+    %57 = fpext float %56 to double
+    %58 = fmul double %57, 2.0
+    %59 = fptrunc double %58 to float
+    %60 = getelementptr inbounds [2 x float], [2 x float]* %smalls, i32 0, i32 1
+    store float %59, float* %60
+    %61 = getelementptr inbounds [2 x float], [2 x float]* %smalls, i32 0, i32 0
+    %62 = load float, float* %61
+    %63 = fpext float %62 to double
+    %64 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %63)
+    %65 = getelementptr inbounds [2 x float], [2 x float]* %smalls, i32 0, i32 1
+    %66 = load float, float* %65
+    %67 = fpext float %66 to double
+    %68 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %67)
+    %signs = alloca [2 x i1]
+    %69 = getelementptr inbounds [2 x i1], [2 x i1]* %signs, i32 0, i32 0
+    store i1 true, i1* %69
+    %70 = getelementptr inbounds [2 x i1], [2 x i1]* %signs, i32 0, i32 1
+    store i1 false, i1* %70
+    %71 = getelementptr inbounds [2 x i1], [2 x i1]* %signs, i32 0, i32 0
+    %72 = load i1, i1* %71
+    %73 = select i1 %72, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
+    %74 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %73)
+    %75 = getelementptr inbounds [2 x i1], [2 x i1]* %signs, i32 0, i32 1
+    %76 = load i1, i1* %75
+    %77 = select i1 %76, i8* getelementptr inbounds ([6 x i8], [6 x i8]* @dogma_heven, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)
+    %78 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %77)
     ret i32 0
 }
 
