@@ -123,6 +123,30 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitRealConst(LangXParser.RealConstContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code trueConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterTrueConst(LangXParser.TrueConstContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code trueConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitTrueConst(LangXParser.TrueConstContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code falseConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterFalseConst(LangXParser.FalseConstContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code falseConst}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitFalseConst(LangXParser.FalseConstContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code addSub}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
