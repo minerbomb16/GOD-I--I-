@@ -12,8 +12,12 @@ stat: 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
 
 type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' | 'Dogma';
 
-expr: expr op=('*' | '/') expr #mulDiv
+expr: 'NEG' expr                 #logicNeg
+    | expr op=('*' | '/') expr #mulDiv
     | expr op=('+' | '-') expr #addSub
+    | expr op='AND' expr         #logicAnd
+    | expr op='OR' expr          #logicOr
+    | expr op='XOR' expr         #logicXor
     | 'Heven'                  #trueConst
     | 'Hell'                   #falseConst
     | INT                      #intConst

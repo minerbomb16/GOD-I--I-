@@ -254,4 +254,59 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
     }
+
+    @Override
+    public void exitLogicAnd(LangXParser.LogicAndContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+
+        if (!v1.type.equals("Dogma") || !v2.type.equals("Dogma")) {
+            System.err.println("Semantic error: AND requires Dogma and Dogma.");
+            System.exit(1);
+        }
+
+        LLVMGenerator.logic("AND", v1.name, v2.name);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+
+    @Override
+    public void exitLogicOr(LangXParser.LogicOrContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+
+        if (!v1.type.equals("Dogma") || !v2.type.equals("Dogma")) {
+            System.err.println("Semantic error: OR requires Dogma and Dogma.");
+            System.exit(1);
+        }
+
+        LLVMGenerator.logic("OR", v1.name, v2.name);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+
+    @Override
+    public void exitLogicXor(LangXParser.LogicXorContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+
+        if (!v1.type.equals("Dogma") || !v2.type.equals("Dogma")) {
+            System.err.println("Semantic error: XOR requires Dogma and Dogma.");
+            System.exit(1);
+        }
+
+        LLVMGenerator.logic("XOR", v1.name, v2.name);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+
+    @Override
+    public void exitLogicNeg(LangXParser.LogicNegContext ctx) {
+        Value v = stack.pop();
+
+        if (!v.type.equals("Dogma")) {
+            System.err.println("Semantic error: NEG requires Dogma.");
+            System.exit(1);
+        }
+
+        LLVMGenerator.logicNeg(v.name);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
 }

@@ -201,6 +201,24 @@ class LLVMGenerator {
       }
    }
 
+   static void logic(String op, String val1, String val2) {
+        String inst = "";
+        if (op.equals("AND")) {
+            inst = "and";
+        } else if (op.equals("OR")) {
+            inst = "or";
+        } else if (op.equals("XOR")) {
+            inst = "xor";
+        }
+        main_text += "    %" + reg + " = " + inst + " i1 " + val1 + ", " + val2 + "\n";
+        reg++;
+   }
+
+   static void logicNeg(String val) {
+      main_text += "    %" + reg + " = xor i1 " + val + ", true\n";
+      reg++;
+   }
+
    static String generate() {
       String text = "";
       text += "declare i32 @printf(i8*, ...)\n";
