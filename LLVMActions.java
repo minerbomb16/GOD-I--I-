@@ -337,6 +337,19 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     @Override
+    public void exitUnaryMinus(LangXParser.UnaryMinusContext ctx) {
+        Value v = stack.pop();
+        
+        if (!v.type.equals("Mortal") && !v.type.equals("Divine") && !v.type.equals("SmallDivine")) {
+            System.err.println("Semantic error: Unary minus (-) requires a numeric type (Mortal, Divine or SmallDivine).");
+            System.exit(1);
+        }
+        
+        LLVMGenerator.unaryMinus(v.name, v.type);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), v.type, 0));
+    }
+
+    @Override
     public void exitLogicNeg(LangXParser.LogicNegContext ctx) {
         Value v = stack.pop();
 
