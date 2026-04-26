@@ -5,7 +5,6 @@ class Value {
     public String name;
     public String type;
     public int length;
-
     public boolean isArray;
     public int arraySize;
 
@@ -33,20 +32,127 @@ public class LLVMActions extends LangXBaseListener {
     
     static int BUFFER_SIZE = 256; 
 
-    private String mortal_to_dogma(Value val, int line) {
-        if (val.name.equals("0")) return "false";
-        if (val.name.equals("1")) return "true";
-
-        System.err.println(
-            "Semantic error (line " + line + "): Dogma can be assigned only Heaven, Hell, 0 or 1."
-        );
-        System.exit(1);
-        return "";
-    }
-
     @Override
     public void exitProg(LangXParser.ProgContext ctx) {
         System.out.println(LLVMGenerator.generate());
+    }
+
+    @Override
+    public void exitDeclareArray(LangXParser.DeclareArrayContext ctx) {
+        String ID = ctx.ID().getText();
+        String type = ctx.type().getText();
+        int size = Integer.parseInt(ctx.INT().getText());
+
+        if (variables.containsKey(ID)) {
+            System.err.println("Semantic error: Value " + ID + " is already declared!");
+            System.exit(1);
+        }
+        if (type.equals("Eternal")) {
+            System.err.println("Semantic error: Eternal arrays are not supported yet.");
+            System.exit(1);
+        }
+        if (size <= 0) {
+            System.err.println("Semantic error: Array size must be greater than 0.");
+            System.exit(1);
+        }
+        variables.put(ID, new Value(ID, type, 0, true, size));
+        LLVMGenerator.declareArray(ID, type, size);
+    }
+
+    @Override
+    public void exitAssignArrayElem(LangXParser.AssignArrayElemContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        Value val = stack.pop();
+        Value index = stack.pop();
+        if (!index.type.equals("Mortal")) {
+            System.err.println("Semantic error: Array index must be Mortal.");
+            System.exit(1);
+        }
+        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
+        String finalValueReg = val.name;
+        if (!arr.type.equals(val.type)) {
+            if (arr.type.equals("SmallDivine") && val.type.equals("Divine")) {
+                finalValueReg = LLVMGenerator.double_to_float(val.name);
+            } else if (arr.type.equals("Divine") && val.type.equals("SmallDivine")) {
+                finalValueReg = LLVMGenerator.float_to_double(val.name);
+            } else if (arr.type.equals("Dogma") && val.type.equals("Mortal")) {
+                finalValueReg = LLVMGenerator.mortal_to_dogma(val, ctx.getStart().getLine());
+            } else {
+                System.err.println("Semantic error: Cannot assign " + val.type + " to array of " + arr.type + ".");
+                System.exit(1);
+            }
+        }
+        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        LLVMGenerator.assignArrayElement(address, finalValueReg, arr.type);
+    }
+
+    @Override
+    public void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        Value index = stack.pop();
+        if (!index.type.equals("Mortal")) {
+            System.err.println("Semantic error: Array index must be Mortal.");
+            System.exit(1);
+        }
+        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
+        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        LLVMGenerator.readArrayElement(address, arr.type);
+    }
+
+    @Override
+    public void exitWriteId(LangXParser.WriteIdContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Value " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value val = variables.get(ID);
+        if (val.isArray) {
+            LLVMGenerator.printArray(ID, val.type, val.arraySize);
+        } else {
+            LLVMGenerator.load(ID, val.type);
+            LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), val.type);
+        }
+    }
+
+    @Override
+    public void exitWriteArrayRange(LangXParser.WriteArrayRangeContext ctx) {
+        String ID = ctx.ID().getText();
+        int start = Integer.parseInt(ctx.INT(0).getText());
+        int end = Integer.parseInt(ctx.INT(1).getText());
+        printArraySlice(ID, start, end, "[" + start + ":" + end + "]");
+    }
+
+    @Override
+    public void exitWriteArrayFrom(LangXParser.WriteArrayFromContext ctx) {
+        String ID = ctx.ID().getText();
+        int start = Integer.parseInt(ctx.INT().getText());
+        printArraySlice(ID, start, null, "[" + start + ":]");
+    }
+
+    @Override
+    public void exitWriteArrayTo(LangXParser.WriteArrayToContext ctx) {
+        String ID = ctx.ID().getText();
+        int end = Integer.parseInt(ctx.INT().getText());
+        printArraySlice(ID, null, end, "[:" + end + "]");
     }
 
     @Override
@@ -68,7 +174,7 @@ public class LLVMActions extends LangXBaseListener {
             } else if (type.equals("Divine") && val.type.equals("SmallDivine")) {
                 finalValueReg = LLVMGenerator.float_to_double(val.name);
             } else if (type.equals("Dogma") && val.type.equals("Mortal")) {
-                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
+                finalValueReg = LLVMGenerator.mortal_to_dogma(val, ctx.getStart().getLine());
             }else {
                 System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign " + val.type + " to " + type + ".");
                 System.exit(1);
@@ -115,7 +221,7 @@ public class LLVMActions extends LangXBaseListener {
             } else if (var.type.equals("Divine") && val.type.equals("SmallDivine")) {
                 finalValueReg = LLVMGenerator.float_to_double(val.name);
             } else if (var.type.equals("Dogma") && val.type.equals("Mortal")) {
-                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
+                finalValueReg = LLVMGenerator.mortal_to_dogma(val, ctx.getStart().getLine());
             } else {
                 System.err.println("Semantic error: Cannot assign " + val.type + " to " + var.type + ".");
                 System.exit(1);
@@ -124,16 +230,6 @@ public class LLVMActions extends LangXBaseListener {
         
         var.length = val.length; 
         LLVMGenerator.assign(ID, finalValueReg, var.type);
-    }
-
-    @Override
-    public void exitTrueConst(LangXParser.TrueConstContext ctx) {
-        stack.push(new Value("true", "Dogma", 0));
-    }
-
-    @Override
-    public void exitFalseConst(LangXParser.FalseConstContext ctx) {
-        stack.push(new Value("false", "Dogma", 0));
     }
 
     @Override
@@ -158,40 +254,65 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     @Override
-    public void exitIntConst(LangXParser.IntConstContext ctx) {
-        stack.push(new Value(ctx.INT().getText(), "Mortal", 0));
-    }
-
-    @Override
-    public void exitRealConst(LangXParser.RealConstContext ctx) {
-        stack.push(new Value(ctx.REAL().getText(), "Divine", 0));
-    }
-
-    @Override
-    public void exitStringConst(LangXParser.StringConstContext ctx) {
-        String raw = ctx.STRING().getText();
-        String content = raw.substring(1, raw.length() - 1);
-        String ptrReg = LLVMGenerator.constant_string(content);
-        stack.push(new Value(ptrReg, "Eternal", content.length()));
-    }
-
-    @Override
-    public void exitVar(LangXParser.VarContext ctx) {
-        String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value not declared " + ID);
+    public void exitUnaryMinus(LangXParser.UnaryMinusContext ctx) {
+        Value v = stack.pop();
+        
+        if (!v.type.equals("Mortal") && !v.type.equals("Divine") && !v.type.equals("SmallDivine")) {
+            System.err.println("Semantic error: Unary minus (-) requires a numeric type (Mortal, Divine or SmallDivine).");
             System.exit(1);
         }
-        Value var = variables.get(ID);
-        if (var.isArray) {
-            System.err.println("Semantic error: Array " + ID + " requires index.");
-            System.exit(1);
+
+        if (v.name.matches("\\d+") || v.name.matches("\\d+\\.\\d+")) {
+            stack.push(new Value("-" + v.name, v.type, 0));
+        } else {
+            LLVMGenerator.unaryMinus(v.name, v.type);
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), v.type, 0));
         }
-        LLVMGenerator.load(ID, var.type);
-        stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
 
-@Override
+    @Override
+    public void exitLogicNeg(LangXParser.LogicNegContext ctx) {
+        Value v = stack.pop();
+
+        if (!v.type.equals("Dogma")) {
+            System.err.println("Semantic error: NEG requires Dogma.");
+            System.exit(1);
+        }
+
+        LLVMGenerator.logicNeg(v.name);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+
+    @Override
+    public void exitMulDiv(LangXParser.MulDivContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+        String op = ctx.op.getText();
+        
+        if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
+        } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
+            LLVMGenerator.arithmetic(op, v1.name, v2.name, "SmallDivine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
+            String extendedV1 = LLVMGenerator.float_to_double(v1.name);
+            LLVMGenerator.arithmetic(op, extendedV1, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
+            String extendedV2 = LLVMGenerator.float_to_double(v2.name);
+            LLVMGenerator.arithmetic(op, v1.name, extendedV2, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        } else {
+            System.err.println("Semantic error: Cannot multiply/divide " + v1.type + " and " + v2.type + ".");
+            System.exit(1);
+        }
+    }
+
+    @Override
     public void exitAddSub(LangXParser.AddSubContext ctx) {
         Value v2 = stack.pop();
         Value v1 = stack.pop();
@@ -229,65 +350,6 @@ public class LLVMActions extends LangXBaseListener {
         }
     }
 
-    private Value stringify(Value v) {
-        if (v.type.equals("Eternal")) return v;
-        if (v.type.equals("Mortal")) {
-            return new Value(LLVMGenerator.int_to_string(v.name, 16), "Eternal", 16);
-        }
-        if (v.type.equals("Divine")) {
-            return new Value(LLVMGenerator.double_to_string(v.name, 32), "Eternal", 32);
-        }
-        if (v.type.equals("SmallDivine")) {
-            return new Value(LLVMGenerator.float_to_string(v.name, 32), "Eternal", 32);
-        }
-        if (v.type.equals("Dogma")) {
-            return new Value(LLVMGenerator.dogma_to_string(v.name), "Eternal", 6);
-        }
-        
-        return null;
-    }
-
-    @Override
-    public void exitMulDiv(LangXParser.MulDivContext ctx) {
-        Value v2 = stack.pop();
-        Value v1 = stack.pop();
-        String op = ctx.op.getText();
-        
-        if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
-            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
-        } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
-            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
-            LLVMGenerator.arithmetic(op, v1.name, v2.name, "SmallDivine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
-        } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
-            String extendedV1 = LLVMGenerator.float_to_double(v1.name);
-            LLVMGenerator.arithmetic(op, extendedV1, v2.name, "Divine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
-            String extendedV2 = LLVMGenerator.float_to_double(v2.name);
-            LLVMGenerator.arithmetic(op, v1.name, extendedV2, "Divine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else {
-            System.err.println("Semantic error: Cannot multiply/divide " + v1.type + " and " + v2.type + ".");
-            System.exit(1);
-        }
-    }
-
-    @Override
-    public void exitAndOp(LangXParser.AndOpContext ctx) {
-        Value v1 = stack.pop();
-        if (!v1.type.equals("Dogma")) {
-            System.err.println("Semantic error: AND requires Dogma on LHS.");
-            System.exit(1);
-        }
-        int currentBr = LLVMGenerator.br++;
-        brStack.push(currentBr);
-        LLVMGenerator.startAnd(v1.name, currentBr);
-    }
-
     @Override
     public void exitLogicAnd(LangXParser.LogicAndContext ctx) {
         Value v2 = stack.pop();
@@ -298,18 +360,6 @@ public class LLVMActions extends LangXBaseListener {
         int currentBr = brStack.pop();
         LLVMGenerator.endAnd(v2.name, currentBr);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
-    }
-
-    @Override
-    public void exitOrOp(LangXParser.OrOpContext ctx) {
-        Value v1 = stack.pop();
-        if (!v1.type.equals("Dogma")) {
-            System.err.println("Semantic error: OR requires Dogma on LHS.");
-            System.exit(1);
-        }
-        int currentBr = LLVMGenerator.br++;
-        brStack.push(currentBr);
-        LLVMGenerator.startOr(v1.name, currentBr);
     }
 
     @Override
@@ -337,67 +387,6 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     @Override
-    public void exitUnaryMinus(LangXParser.UnaryMinusContext ctx) {
-        Value v = stack.pop();
-        
-        if (!v.type.equals("Mortal") && !v.type.equals("Divine") && !v.type.equals("SmallDivine")) {
-            System.err.println("Semantic error: Unary minus (-) requires a numeric type (Mortal, Divine or SmallDivine).");
-            System.exit(1);
-        }
-        
-        LLVMGenerator.unaryMinus(v.name, v.type);
-        stack.push(new Value("%" + (LLVMGenerator.reg - 1), v.type, 0));
-    }
-
-    @Override
-    public void exitLogicNeg(LangXParser.LogicNegContext ctx) {
-        Value v = stack.pop();
-
-        if (!v.type.equals("Dogma")) {
-            System.err.println("Semantic error: NEG requires Dogma.");
-            System.exit(1);
-        }
-
-        LLVMGenerator.logicNeg(v.name);
-        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
-    }
-
-    private void checkArrayIndexIfConst(String ID, Value arr, Value index, int line) {
-        if (index.name.matches("-?\\d+")) {
-            int idx = Integer.parseInt(index.name);
-            if (idx < 0 || idx >= arr.arraySize) {
-                System.err.println(
-                    "Semantic error (line " + line + "): Array index out of bounds: "
-                    + ID + "[" + idx + "]. Valid range is 0.." + (arr.arraySize - 1) + "."
-                );
-                System.exit(1);
-            }
-        }
-    }
-
-    @Override
-    public void exitDeclareArray(LangXParser.DeclareArrayContext ctx) {
-        String ID = ctx.ID().getText();
-        String type = ctx.type().getText();
-        int size = Integer.parseInt(ctx.INT().getText());
-
-        if (variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value " + ID + " is already declared!");
-            System.exit(1);
-        }
-        if (type.equals("Eternal")) {
-            System.err.println("Semantic error: Eternal arrays are not supported yet.");
-            System.exit(1);
-        }
-        if (size <= 0) {
-            System.err.println("Semantic error: Array size must be greater than 0.");
-            System.exit(1);
-        }
-        variables.put(ID, new Value(ID, type, 0, true, size));
-        LLVMGenerator.declareArray(ID, type, size);
-    }
-
-    @Override
     public void exitArrayElem(LangXParser.ArrayElemContext ctx) {
         String ID = ctx.ID().getText();
         if (!variables.containsKey(ID)) {
@@ -421,60 +410,87 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     @Override
-    public void exitAssignArrayElem(LangXParser.AssignArrayElemContext ctx) {
+    public void exitTrueConst(LangXParser.TrueConstContext ctx) {
+        stack.push(new Value("true", "Dogma", 0));
+    }
+
+    @Override
+    public void exitFalseConst(LangXParser.FalseConstContext ctx) {
+        stack.push(new Value("false", "Dogma", 0));
+    }
+
+    @Override
+    public void exitIntConst(LangXParser.IntConstContext ctx) {
+        stack.push(new Value(ctx.INT().getText(), "Mortal", 0));
+    }
+
+    @Override
+    public void exitRealConst(LangXParser.RealConstContext ctx) {
+        stack.push(new Value(ctx.REAL().getText(), "Divine", 0));
+    }
+
+    @Override
+    public void exitStringConst(LangXParser.StringConstContext ctx) {
+        String raw = ctx.STRING().getText();
+        String content = raw.substring(1, raw.length() - 1);
+        String ptrReg = LLVMGenerator.constant_string(content);
+        stack.push(new Value(ptrReg, "Eternal", content.length()));
+    }
+
+    @Override
+    public void exitVar(LangXParser.VarContext ctx) {
         String ID = ctx.ID().getText();
         if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.err.println("Semantic error: Value not declared " + ID);
             System.exit(1);
         }
-        Value arr = variables.get(ID);
-        if (!arr.isArray) {
-            System.err.println("Semantic error: " + ID + " is not an array.");
+        Value var = variables.get(ID);
+        if (var.isArray) {
+            System.err.println("Semantic error: Array " + ID + " requires index.");
             System.exit(1);
         }
-        Value val = stack.pop();
-        Value index = stack.pop();
-        if (!index.type.equals("Mortal")) {
-            System.err.println("Semantic error: Array index must be Mortal.");
+        LLVMGenerator.load(ID, var.type);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
+    }
+
+    @Override
+    public void exitAndOp(LangXParser.AndOpContext ctx) {
+        Value v1 = stack.pop();
+        if (!v1.type.equals("Dogma")) {
+            System.err.println("Semantic error: AND requires Dogma on LHS.");
             System.exit(1);
         }
-        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
-        String finalValueReg = val.name;
-        if (!arr.type.equals(val.type)) {
-            if (arr.type.equals("SmallDivine") && val.type.equals("Divine")) {
-                finalValueReg = LLVMGenerator.double_to_float(val.name);
-            } else if (arr.type.equals("Divine") && val.type.equals("SmallDivine")) {
-                finalValueReg = LLVMGenerator.float_to_double(val.name);
-            } else if (arr.type.equals("Dogma") && val.type.equals("Mortal")) {
-                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
-            } else {
-                System.err.println("Semantic error: Cannot assign " + val.type + " to array of " + arr.type + ".");
+        int currentBr = LLVMGenerator.br++;
+        brStack.push(currentBr);
+        LLVMGenerator.startAnd(v1.name, currentBr);
+    }
+
+    @Override
+    public void exitOrOp(LangXParser.OrOpContext ctx) {
+        Value v1 = stack.pop();
+        if (!v1.type.equals("Dogma")) {
+            System.err.println("Semantic error: OR requires Dogma on LHS.");
+            System.exit(1);
+        }
+        int currentBr = LLVMGenerator.br++;
+        brStack.push(currentBr);
+        LLVMGenerator.startOr(v1.name, currentBr);
+    }
+
+    private void checkArrayIndexIfConst(String ID, Value arr, Value index, int line) {
+        if (index.name.matches("-?\\d+")) {
+            int idx = Integer.parseInt(index.name);
+            if (idx < 0 || idx >= arr.arraySize) {
+                System.err.println(
+                    "Semantic error (line " + line + "): Array index out of bounds: "
+                    + ID + "[" + idx + "]. Valid range is 0.." + (arr.arraySize - 1) + "."
+                );
                 System.exit(1);
             }
         }
-        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
-        LLVMGenerator.assignArrayElement(address, finalValueReg, arr.type);
     }
 
-    @Override
-    public void exitWriteId(LangXParser.WriteIdContext ctx) {
-        String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value " + ID + " does not exist!");
-            System.exit(1);
-        }
-        Value val = variables.get(ID);
-        if (val.isArray) {
-            LLVMGenerator.printArray(ID, val.type, val.arraySize);
-        } else {
-            LLVMGenerator.load(ID, val.type);
-            LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), val.type);
-        }
-    }
-
-    @Override
-    public void exitWriteArrayRange(LangXParser.WriteArrayRangeContext ctx) {
-        String ID = ctx.ID().getText();
+    private void printArraySlice(String ID, Integer startParam, Integer endParam, String rangeText) {
         if (!variables.containsKey(ID)) {
             System.err.println("Semantic error: Array " + ID + " does not exist!");
             System.exit(1);
@@ -484,76 +500,33 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: " + ID + " is not an array.");
             System.exit(1);
         }
-        int start = Integer.parseInt(ctx.INT(0).getText());
-        int end = Integer.parseInt(ctx.INT(1).getText());
+
+        int start = (startParam != null) ? startParam : 0;
+        int end = (endParam != null) ? endParam : (arr.arraySize - 1);
+
         if (start < 0 || end >= arr.arraySize || start > end) {
-            System.err.println("Semantic error: Invalid array range " + ID + "[" + start + ":" + end + "].");
+            System.err.println("Semantic error: Invalid array range " + ID + rangeText + ".");
             System.exit(1);
         }
+        
         LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
     }
 
-    @Override
-    public void exitWriteArrayFrom(LangXParser.WriteArrayFromContext ctx) {
-        String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Array " + ID + " does not exist!");
-            System.exit(1);
+    private Value stringify(Value v) {
+        if (v.type.equals("Eternal")) return v;
+        if (v.type.equals("Mortal")) {
+            return new Value(LLVMGenerator.int_to_string(v.name, 16), "Eternal", 16);
         }
-        Value arr = variables.get(ID);
-        if (!arr.isArray) {
-            System.err.println("Semantic error: " + ID + " is not an array.");
-            System.exit(1);
+        if (v.type.equals("Divine")) {
+            return new Value(LLVMGenerator.double_to_string(v.name, 32), "Eternal", 32);
         }
-        int start = Integer.parseInt(ctx.INT().getText());
-        int end = arr.arraySize - 1;
-        if (start < 0 || start >= arr.arraySize) {
-            System.err.println("Semantic error: Invalid array range " + ID + "[" + start + ":].");
-            System.exit(1);
+        if (v.type.equals("SmallDivine")) {
+            return new Value(LLVMGenerator.float_to_string(v.name, 32), "Eternal", 32);
         }
-        LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
-    }
-
-    @Override
-    public void exitWriteArrayTo(LangXParser.WriteArrayToContext ctx) {
-        String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Array " + ID + " does not exist!");
-            System.exit(1);
+        if (v.type.equals("Dogma")) {
+            return new Value(LLVMGenerator.dogma_to_string(v.name), "Eternal", 6);
         }
-        Value arr = variables.get(ID);
-        if (!arr.isArray) {
-            System.err.println("Semantic error: " + ID + " is not an array.");
-            System.exit(1);
-        }
-        int start = 0;
-        int end = Integer.parseInt(ctx.INT().getText());
-        if (end < 0 || end >= arr.arraySize) {
-            System.err.println("Semantic error: Invalid array range " + ID + "[:" + end + "].");
-            System.exit(1);
-        }
-        LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
-    }
-
-    @Override
-    public void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx) {
-        String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Array " + ID + " does not exist!");
-            System.exit(1);
-        }
-        Value arr = variables.get(ID);
-        if (!arr.isArray) {
-            System.err.println("Semantic error: " + ID + " is not an array.");
-            System.exit(1);
-        }
-        Value index = stack.pop();
-        if (!index.type.equals("Mortal")) {
-            System.err.println("Semantic error: Array index must be Mortal.");
-            System.exit(1);
-        }
-        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
-        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
-        LLVMGenerator.readArrayElement(address, arr.type);
+        
+        return null;
     }
 }
