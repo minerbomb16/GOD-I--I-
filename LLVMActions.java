@@ -146,7 +146,9 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value val = variables.get(ID);
-        if (val.isArray) {
+        if (val.isMatrix) {
+            LLVMGenerator.printMatrix(ID, val.type, val.rows, val.cols);
+        } else if (val.isArray) {
             LLVMGenerator.printArray(ID, val.type, val.arraySize);
         } else {
             LLVMGenerator.load(ID, val.type);
@@ -464,7 +466,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
-        if (var.isArray) {
+        if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Array " + ID + " requires index.");
             System.exit(1);
         }
