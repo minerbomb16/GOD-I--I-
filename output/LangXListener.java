@@ -338,4 +338,24 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStringConst(LangXParser.StringConstContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#andOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterAndOp(LangXParser.AndOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#andOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitAndOp(LangXParser.AndOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#orOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterOrOp(LangXParser.OrOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#orOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitOrOp(LangXParser.OrOpContext ctx);
 }

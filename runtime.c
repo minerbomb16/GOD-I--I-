@@ -53,6 +53,33 @@ void readReal(double* ptr) {
     *ptr = val;
 }
 
+void readFloat(float* ptr) {
+    char buf[256];
+    if (scanf("%255s", buf) != 1) {
+        printf("Error: Expected SmallDivine!\n");
+        exit(1);
+    }
+    
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+
+    if (strlen(buf) > 9) {
+        printf("Error: SmallDivine value has too many digits and will lose precision!\n");
+        exit(1);
+    }
+
+    char *endptr;
+    errno = 0;
+    float val = strtof(buf, &endptr);
+
+    if (endptr == buf || errno == ERANGE) {
+        printf("Error: SmallDivine value is invalid!\n");
+        exit(1);
+    }
+    
+    *ptr = val;
+}
+
 void readString(char* ptr) {
     if (scanf("%255s", ptr) != 1) {
         printf("Error: Expected Eternal!\n");

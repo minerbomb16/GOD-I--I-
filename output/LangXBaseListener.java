@@ -347,6 +347,30 @@ public class LangXBaseListener implements LangXListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStringConst(LangXParser.StringConstContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAndOp(LangXParser.AndOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAndOp(LangXParser.AndOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOrOp(LangXParser.OrOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOrOp(LangXParser.OrOpContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

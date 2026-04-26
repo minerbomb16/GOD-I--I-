@@ -19,22 +19,24 @@ stat: 'Create' type ID '[' INT ']' ';'                    #declareArray
 
 type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' | 'Dogma';
 
-expr: 'NEG' expr                 #logicNeg
-    | expr op=('*' | '/') expr #mulDiv
-    | expr op=('+' | '-') expr #addSub
-    | expr op='AND' expr         #logicAnd
-    | expr op='OR' expr          #logicOr
-    | expr op='XOR' expr         #logicXor
-    | ID '[' expr ']'            #arrayElem
+expr: 'NEG' expr                #logicNeg
+    | expr op=('*' | '/') expr  #mulDiv
+    | expr op=('+' | '-') expr  #addSub
+    | expr andOp expr           #logicAnd
+    | expr orOp expr            #logicOr
+    | expr op='XOR' expr        #logicXor
+    | ID '[' expr ']'           #arrayElem
     | 'Heaven'                  #trueConst
-    | 'Hell'                   #falseConst
-    | INT                      #intConst
-    | REAL                     #realConst
-    | STRING                   #stringConst
-    | ID                       #var
-    | '(' expr ')'             #parens
+    | 'Hell'                    #falseConst
+    | INT                       #intConst
+    | REAL                      #realConst
+    | STRING                    #stringConst
+    | ID                        #var
+    | '(' expr ')'              #parens
     ;
 
+andOp: 'AND' ;
+orOp: 'OR' ;
 STRING: '"' ~('"'|'\\')* '"' ;
 INT: [0-9]+ ;
 REAL: [0-9]+ '.' [0-9]+ ;

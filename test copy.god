@@ -1,36 +1,50 @@
-Create Dogma x in the image of Heaven;
-Reveal x;
+Create Mortal sins2[5];
 
-x be transformed into Hell;
-Reveal x;
+sins2[0] be transformed into 10;
+sins2[1] be transformed into 20;
+sins2[2] be transformed into 30;
+sins2[3] be transformed into 40;
+sins2[4] be transformed into 50;
 
-Create Dogma x2 in the image of 1;
-Reveal x2;
+Reveal sins2[:2];
+Reveal sins2[1:2];
+Reveal sins2[1:];
 
-x2 be transformed into 0;
-Reveal x2;
+Create Mortal newsins[3];
 
-Create Dogma x3;
-Confess x3;
-Reveal x3;
+Confess newsins[0];
+Confess newsins[1];
 
-Create Dogma a in the image of Heaven;
-Create Dogma b in the image of Hell;
+newsins[2] be transformed into newsins[0] + newsins[1];
 
-Create Dogma c in the image of a AND b;
-Reveal c;
+Reveal newsins;
 
-Create Dogma d in the image of a OR b;
-Reveal d;
+Create Mortal sins[3];
 
-Create Dogma e in the image of a XOR b;
-Reveal e;
+sins[0] be transformed into 10;
+sins[1] be transformed into 20;
+sins[2] be transformed into sins[0] + sins[1];
 
-Create Dogma f in the image of NEG a;
-Reveal f;
+Reveal sins[1];
+Reveal sins;
 
-Create Dogma g in the image of NEG b;
-Reveal g;
+Create Divine graces[3];
 
-Create Dogma h in the image of a AND a AND NEG a;
-Reveal h;
+graces[0] be transformed into 3.14;
+graces[1] be transformed into graces[0] * 2.0;
+Confess graces[2];
+Reveal graces;
+
+Create SmallDivine smalls[2];
+
+smalls[0] be transformed into 1.5;
+smalls[1] be transformed into smalls[0] * 2.0;
+
+Reveal smalls;
+
+Create Dogma signs[2];
+
+signs[0] be transformed into Heaven;
+signs[1] be transformed into Hell;
+
+Reveal signs;
