@@ -63,12 +63,8 @@ class LLVMGenerator {
       main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* " + address + "\n";
       reg++;
    }
- 
    static void arithmetic(String op, String val1, String val2, String type) {
-      String llvmType = "";
-      if (type.equals("Mortal")) llvmType = "i32";
-      else if (type.equals("Divine")) llvmType = "double";
-      else if (type.equals("SmallDivine")) llvmType = "float";
+      String llvmType = llvmType(type);
 
       String inst = "";
       if (type.equals("Mortal")) {
@@ -117,6 +113,17 @@ class LLVMGenerator {
       str++;
       return newStrPtr;
    }
+   
+   static String mortal_to_dogma(Value val, int line) {
+        if (val.name.equals("0")) return "false";
+        if (val.name.equals("1")) return "true";
+
+        System.err.println(
+            "Semantic error (line " + line + "): Dogma can be assigned only Heaven, Hell, 0 or 1."
+        );
+        System.exit(1);
+        return "";
+    }
 
    static String int_to_string(String in, int lout) {
       allocate_string("str" + str, lout);
