@@ -3,6 +3,7 @@ class LLVMGenerator {
    static String main_text = "";
    static int reg = 1;
    static int str = 1;
+   static int br = 1;
 
    static String llvmType(String type) {
       if (type.equals("Mortal")) return "i32";
@@ -32,9 +33,11 @@ class LLVMGenerator {
       reg++;
    }
 
-  static void declareArray(String id, String type, int size) {
+   static void declareArray(String id, String type, int size) {
       String llvmType = llvmType(type);
-      main_text += "    %" + id + " = alloca [" + size + " x " + llvmType + "]\n";
+      String arrayType = "[" + size + " x " + llvmType + "]";
+      main_text += "    %" + id + " = alloca " + arrayType + "\n";
+      main_text += "    store " + arrayType + " zeroinitializer, " + arrayType + "* %" + id + "\n";
    }
 
    static String getArrayElementAddress(String id, String type, int size, String indexReg) {
@@ -170,6 +173,15 @@ class LLVMGenerator {
       return newStrPtr;
    }
 
+   static String dogma_to_string(String in) {
+      main_text += "    %" + reg + " = select i1 " + in + 
+                   ", i8* getelementptr inbounds ([7 x i8], [7 x i8]* @dogma_Heaven, i32 0, i32 0)" + 
+                   ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_Hell, i32 0, i32 0)\n";
+      String newStrPtr = "%" + reg;
+      reg++;
+      return newStrPtr;
+   }
+
    static void print(String valueReg, String type) {
       if (type.equals("Mortal")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 " + valueReg + ")\n";
@@ -181,7 +193,7 @@ class LLVMGenerator {
       }else if (type.equals("Eternal")) {
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* " + valueReg + ")\n";
       } else if (type.equals("Dogma")) {
-         main_text += "    %" + reg + " = select i1 " + valueReg + ", i8* getelementptr inbounds ([7 x i8], [7 x i8]* @dogma_Heaven, i32 0, i32 0)" + ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_hell, i32 0, i32 0)\n";
+         main_text += "    %" + reg + " = select i1 " + valueReg + ", i8* getelementptr inbounds ([7 x i8], [7 x i8]* @dogma_Heaven, i32 0, i32 0)" + ", i8* getelementptr inbounds ([5 x i8], [5 x i8]* @dogma_Hell, i32 0, i32 0)\n";
          String dogmaStrReg = "%" + reg;
          reg++;
          main_text += "    %" + reg + " = call i32 (i8*, ...) @printf(" + "i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), "+ "i8* " + dogmaStrReg + ")\n";
@@ -215,22 +227,10 @@ class LLVMGenerator {
       } else if (type.equals("Divine")) {
          main_text += "    call void @readReal(double* " + address + ")\n";
       } else if (type.equals("SmallDivine")) {
-         readSmallRealToAddress(address);
+         main_text += "    call void @readFloat(float* " + address + ")\n";
       } else if (type.equals("Dogma")) {
          readDogmaToAddress(address);
       }
-   }
-
-   static void readSmallReal(String id) {
-      main_text += "    %" + reg + " = alloca double\n";
-      String tmpPtr = "%" + reg;
-      reg++;
-      main_text += "    call void @readReal(double* " + tmpPtr + ")\n";
-      main_text += "    %" + reg + " = load double, double* " + tmpPtr + "\n";
-      String loadedReg = "%" + reg;
-      reg++;
-      String convertedReg = double_to_float(loadedReg);
-      main_text += "    store float " + convertedReg + ", float* %" + id + "\n";
    }
 
    static void readDogma(String id) {
@@ -249,7 +249,7 @@ class LLVMGenerator {
       } else if (type.equals("Divine")) {
          main_text += "    call void @readReal(double* %" + id + ")\n";
       } else if (type.equals("SmallDivine")) {
-        readSmallReal(id);
+         main_text += "    call void @readFloat(float* %" + id + ")\n";
       } else if (type.equals("Eternal")) {
          allocate_string("str" + str, length);
          main_text += "    %" + reg + " = getelementptr inbounds [" + (length + 1) + " x i8], [" + (length + 1) + " x i8]* %str" + str + ", i32 0, i32 0\n";
@@ -263,18 +263,6 @@ class LLVMGenerator {
       }
    }
 
-   static void readSmallRealToAddress(String address) {
-      main_text += "    %" + reg + " = alloca double\n";
-      String tmpPtr = "%" + reg;
-      reg++;
-      main_text += "    call void @readReal(double* " + tmpPtr + ")\n";
-      main_text += "    %" + reg + " = load double, double* " + tmpPtr + "\n";
-      String loadedReg = "%" + reg;
-      reg++;
-      String convertedReg = double_to_float(loadedReg);
-      main_text += "    store float " + convertedReg + ", float* " + address + "\n";
-   }
-
     static void readDogmaToAddress(String address) {
       main_text += "    %" + reg + " = call i32 @readDogma()\n";
       String intReg = "%" + reg;
@@ -285,21 +273,40 @@ class LLVMGenerator {
       main_text += "    store i1 " + boolReg + ", i1* " + address + "\n";
    }
 
-   static void logic(String op, String val1, String val2) {
-        String inst = "";
-        if (op.equals("AND")) {
-            inst = "and";
-        } else if (op.equals("OR")) {
-            inst = "or";
-        } else if (op.equals("XOR")) {
-            inst = "xor";
-        }
-        main_text += "    %" + reg + " = " + inst + " i1 " + val1 + ", " + val2 + "\n";
-        reg++;
-   }
-
    static void logicNeg(String val) {
       main_text += "    %" + reg + " = xor i1 " + val + ", true\n";
+      reg++;
+   }
+   
+   static void startAnd(String lhsReg, int brCnt) {
+      main_text += "    br label %and_lhs_end_" + brCnt + "\n";
+      main_text += "and_lhs_end_" + brCnt + ":\n";
+      main_text += "    br i1 " + lhsReg + ", label %and_rhs_" + brCnt + ", label %and_end_" + brCnt + "\n";
+      main_text += "and_rhs_" + brCnt + ":\n";
+   }
+
+   static void endAnd(String rhsReg, int brCnt) {
+      main_text += "    br label %and_rhs_end_" + brCnt + "\n";
+      main_text += "and_rhs_end_" + brCnt + ":\n";
+      main_text += "    br label %and_end_" + brCnt + "\n";
+      main_text += "and_end_" + brCnt + ":\n";
+      main_text += "    %" + reg + " = phi i1 [ false, %and_lhs_end_" + brCnt + " ], [ " + rhsReg + ", %and_rhs_end_" + brCnt + " ]\n";
+      reg++;
+   }
+
+   static void startOr(String lhsReg, int brCnt) {
+      main_text += "    br label %or_lhs_end_" + brCnt + "\n";
+      main_text += "or_lhs_end_" + brCnt + ":\n";
+      main_text += "    br i1 " + lhsReg + ", label %or_end_" + brCnt + ", label %or_rhs_" + brCnt + "\n";
+      main_text += "or_rhs_" + brCnt + ":\n";
+   }
+
+   static void endOr(String rhsReg, int brCnt) {
+      main_text += "    br label %or_rhs_end_" + brCnt + "\n";
+      main_text += "or_rhs_end_" + brCnt + ":\n";
+      main_text += "    br label %or_end_" + brCnt + "\n";
+      main_text += "or_end_" + brCnt + ":\n";
+      main_text += "    %" + reg + " = phi i1 [ true, %or_lhs_end_" + brCnt + " ], [ " + rhsReg + ", %or_rhs_end_" + brCnt + " ]\n";
       reg++;
    }
 
@@ -308,6 +315,7 @@ class LLVMGenerator {
       text += "declare i32 @printf(i8*, ...)\n";
       text += "declare void @readInt(i32*)\n";
       text += "declare void @readReal(double*)\n";
+      text += "declare void @readFloat(float*)\n";
       text += "declare void @readString(i8*)\n";
       text += "declare i32 @readDogma()\n";
 
@@ -323,7 +331,7 @@ class LLVMGenerator {
       text += "@strspf = constant [3 x i8] c\"%f\\00\"\n";
 
       text += "@dogma_Heaven = constant [7 x i8] c\"Heaven\\00\"\n";
-      text += "@dogma_hell = constant [5 x i8] c\"Hell\\00\"\n";
+      text += "@dogma_Hell = constant [5 x i8] c\"Hell\\00\"\n";
 
       text += header_text + "\n";
       text += "define i32 @main() {\n";

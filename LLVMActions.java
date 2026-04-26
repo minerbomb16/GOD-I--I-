@@ -29,6 +29,7 @@ class Value {
 public class LLVMActions extends LangXBaseListener {
     HashMap<String, Value> variables = new HashMap<>(); 
     Stack<Value> stack = new Stack<>();
+    Stack<Integer> brStack = new Stack<>();
     
     static int BUFFER_SIZE = 256; 
 
@@ -190,7 +191,7 @@ public class LLVMActions extends LangXBaseListener {
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
 
-    @Override
+@Override
     public void exitAddSub(LangXParser.AddSubContext ctx) {
         Value v2 = stack.pop();
         Value v1 = stack.pop();
@@ -213,43 +214,37 @@ public class LLVMActions extends LangXBaseListener {
             String extendedV2 = LLVMGenerator.float_to_double(v2.name);
             LLVMGenerator.arithmetic(op, v1.name, extendedV2, "Divine");
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else if (op.equals("+")) {
-            if (v1.type.equals("Eternal") && v2.type.equals("Eternal")) {
-                String res = LLVMGenerator.add_string(v1.name, v1.length, v2.name, v2.length);
-                stack.push(new Value(res, "Eternal", v1.length + v2.length));
-            } else if (v1.type.equals("Eternal") && v2.type.equals("Mortal")) {
-                String v2str = LLVMGenerator.int_to_string(v2.name, 16);
-                String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 16);
-                stack.push(new Value(res, "Eternal", v1.length + 16));
-            } else if (v1.type.equals("Eternal") && v2.type.equals("Divine")) {
-                String v2str = LLVMGenerator.double_to_string(v2.name, 32); // Więcej miejsca na miejsca po przecinku!
-                String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 32);
-                stack.push(new Value(res, "Eternal", v1.length + 32));
-            } else if (v1.type.equals("Eternal") && v2.type.equals("SmallDivine")) {
-                String v2str = LLVMGenerator.float_to_string(v2.name, 32); 
-                String res = LLVMGenerator.add_string(v1.name, v1.length, v2str, 32);
-                stack.push(new Value(res, "Eternal", v1.length + 32));
-            }
-            else if (v1.type.equals("Mortal") && v2.type.equals("Eternal")) {
-                String v1str = LLVMGenerator.int_to_string(v1.name, 16);
-                String res = LLVMGenerator.add_string(v1str, 16, v2.name, v2.length);
-                stack.push(new Value(res, "Eternal", 16 + v2.length));
-            } else if (v1.type.equals("Divine") && v2.type.equals("Eternal")) {
-                String v1str = LLVMGenerator.double_to_string(v1.name, 32);
-                String res = LLVMGenerator.add_string(v1str, 32, v2.name, v2.length);
-                stack.push(new Value(res, "Eternal", 32 + v2.length));
-           } else if (v1.type.equals("SmallDivine") && v2.type.equals("Eternal")) {
-                String v1str = LLVMGenerator.float_to_string(v1.name, 32);
-                String res = LLVMGenerator.add_string(v1str, 32, v2.name, v2.length);
-                stack.push(new Value(res, "Eternal", 32 + v2.length));
-            }else {
+        } else if (op.equals("+") && (v1.type.equals("Eternal") || v2.type.equals("Eternal"))) {
+            Value str1 = stringify(v1);
+            Value str2 = stringify(v2);
+            if (str1 == null || str2 == null) {
                 System.err.println("Semantic error: Cannot combine " + v1.type + " and " + v2.type + ".");
                 System.exit(1);
             }
+            String res = LLVMGenerator.add_string(str1.name, str1.length, str2.name, str2.length);
+            stack.push(new Value(res, "Eternal", str1.length + str2.length));
         } else {
-            System.err.println("Semantic error: Operator " + op + " not supported for these types.");
+            System.err.println("Semantic error: Operator " + op + " not supported for types " + v1.type + " and " + v2.type + ".");
             System.exit(1);
         }
+    }
+
+    private Value stringify(Value v) {
+        if (v.type.equals("Eternal")) return v;
+        if (v.type.equals("Mortal")) {
+            return new Value(LLVMGenerator.int_to_string(v.name, 16), "Eternal", 16);
+        }
+        if (v.type.equals("Divine")) {
+            return new Value(LLVMGenerator.double_to_string(v.name, 32), "Eternal", 32);
+        }
+        if (v.type.equals("SmallDivine")) {
+            return new Value(LLVMGenerator.float_to_string(v.name, 32), "Eternal", 32);
+        }
+        if (v.type.equals("Dogma")) {
+            return new Value(LLVMGenerator.dogma_to_string(v.name), "Eternal", 6);
+        }
+        
+        return null;
     }
 
     @Override
@@ -282,30 +277,50 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     @Override
-    public void exitLogicAnd(LangXParser.LogicAndContext ctx) {
-        Value v2 = stack.pop();
+    public void exitAndOp(LangXParser.AndOpContext ctx) {
         Value v1 = stack.pop();
-
-        if (!v1.type.equals("Dogma") || !v2.type.equals("Dogma")) {
-            System.err.println("Semantic error: AND requires Dogma and Dogma.");
+        if (!v1.type.equals("Dogma")) {
+            System.err.println("Semantic error: AND requires Dogma on LHS.");
             System.exit(1);
         }
+        int currentBr = LLVMGenerator.br++;
+        brStack.push(currentBr);
+        LLVMGenerator.startAnd(v1.name, currentBr);
+    }
 
-        LLVMGenerator.logic("AND", v1.name, v2.name);
+    @Override
+    public void exitLogicAnd(LangXParser.LogicAndContext ctx) {
+        Value v2 = stack.pop();
+        if (!v2.type.equals("Dogma")) {
+            System.err.println("Semantic error: AND requires Dogma on RHS.");
+            System.exit(1);
+        }
+        int currentBr = brStack.pop();
+        LLVMGenerator.endAnd(v2.name, currentBr);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+
+    @Override
+    public void exitOrOp(LangXParser.OrOpContext ctx) {
+        Value v1 = stack.pop();
+        if (!v1.type.equals("Dogma")) {
+            System.err.println("Semantic error: OR requires Dogma on LHS.");
+            System.exit(1);
+        }
+        int currentBr = LLVMGenerator.br++;
+        brStack.push(currentBr);
+        LLVMGenerator.startOr(v1.name, currentBr);
     }
 
     @Override
     public void exitLogicOr(LangXParser.LogicOrContext ctx) {
         Value v2 = stack.pop();
-        Value v1 = stack.pop();
-
-        if (!v1.type.equals("Dogma") || !v2.type.equals("Dogma")) {
-            System.err.println("Semantic error: OR requires Dogma and Dogma.");
+        if (!v2.type.equals("Dogma")) {
+            System.err.println("Semantic error: OR requires Dogma on RHS.");
             System.exit(1);
         }
-
-        LLVMGenerator.logic("OR", v1.name, v2.name);
+        int currentBr = brStack.pop();
+        LLVMGenerator.endOr(v2.name, currentBr);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
     }
 
@@ -313,14 +328,12 @@ public class LLVMActions extends LangXBaseListener {
     public void exitLogicXor(LangXParser.LogicXorContext ctx) {
         Value v2 = stack.pop();
         Value v1 = stack.pop();
-
         if (!v1.type.equals("Dogma") || !v2.type.equals("Dogma")) {
             System.err.println("Semantic error: XOR requires Dogma and Dogma.");
             System.exit(1);
         }
-
-        LLVMGenerator.logic("XOR", v1.name, v2.name);
-        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+        LLVMGenerator.main_text += "    %" + LLVMGenerator.reg + " = xor i1 " + v1.name + ", " + v2.name + "\n";
+        stack.push(new Value("%" + (LLVMGenerator.reg++), "Dogma", 0));
     }
 
     @Override
