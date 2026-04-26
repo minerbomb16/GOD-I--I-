@@ -273,6 +273,17 @@ class LLVMGenerator {
       main_text += "    store i1 " + boolReg + ", i1* " + address + "\n";
    }
 
+   static void unaryMinus(String val, String type) {
+      if (type.equals("Mortal")) {
+         main_text += "    %" + reg + " = sub i32 0, " + val + "\n";
+      } else if (type.equals("Divine")) {
+         main_text += "    %" + reg + " = fsub double 0.0, " + val + "\n";
+      } else if (type.equals("SmallDivine")) {
+         main_text += "    %" + reg + " = fsub float 0.0, " + val + "\n";
+      }
+      reg++;
+   }
+
    static void logicNeg(String val) {
       main_text += "    %" + reg + " = xor i1 " + val + ", true\n";
       reg++;

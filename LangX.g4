@@ -1,25 +1,26 @@
 grammar LangX;
 
-prog: stat+ EOF 
+prog: start+ EOF 
     ;
 
-stat: 'Create' type ID '[' INT ']' ';'                    #declareArray
-    | ID '[' expr ']' 'be transformed into' expr ';'       #assignArrayElem
-    | 'Confess' ID '[' expr ']' ';'                        #readArrayElem
-    | 'Reveal' ID ';'                                      #writeId
-    | 'Reveal' ID '[' INT ':' INT ']' ';'                  #writeArrayRange
-    | 'Reveal' ID '[' INT ':' ']' ';'                      #writeArrayFrom
-    | 'Reveal' ID '[' ':' INT ']' ';'                      #writeArrayTo
-    | 'Create' type ID 'in the image of' expr ';'  #declareAndAssign
-    | 'Create' type ID ';'                         #declare
-    | ID 'be transformed into' expr ';'            #assign
-    | 'Reveal' expr ';'                            #write
-    | 'Confess' ID ';'                             #read
+start: 'Create' type ID '[' INT ']' ';'                 #declareArray
+    | ID '[' expr ']' 'be transformed into' expr ';'    #assignArrayElem
+    | 'Confess' ID '[' expr ']' ';'                     #readArrayElem
+    | 'Reveal' ID ';'                                   #writeId
+    | 'Reveal' ID '[' INT ':' INT ']' ';'               #writeArrayRange
+    | 'Reveal' ID '[' INT ':' ']' ';'                   #writeArrayFrom
+    | 'Reveal' ID '[' ':' INT ']' ';'                   #writeArrayTo
+    | 'Create' type ID 'in the image of' expr ';'       #declareAndAssign
+    | 'Create' type ID ';'                              #declare
+    | ID 'be transformed into' expr ';'                 #assign
+    | 'Reveal' expr ';'                                 #write
+    | 'Confess' ID ';'                                  #read
     ;
 
 type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' | 'Dogma';
 
-expr: 'NEG' expr                #logicNeg
+expr: '-' expr                  #unaryMinus
+    | 'NEG' expr                #logicNeg
     | expr op=('*' | '/') expr  #mulDiv
     | expr op=('+' | '-') expr  #addSub
     | expr andOp expr           #logicAnd
