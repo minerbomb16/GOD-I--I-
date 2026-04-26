@@ -63,8 +63,7 @@ class LLVMGenerator {
       main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* " + address + "\n";
       reg++;
    }
-
-   
+ 
    static void arithmetic(String op, String val1, String val2, String type) {
       String llvmType = "";
       if (type.equals("Mortal")) llvmType = "i32";
@@ -218,8 +217,8 @@ class LLVMGenerator {
 
       String valueReg = "%" + (reg - 1);
       print(valueReg, type);
+      }
    }
-}
 
    static void readArrayElement(String address, String type) {
       if (type.equals("Mortal")) {
@@ -350,5 +349,50 @@ class LLVMGenerator {
       text += "    ret i32 0\n";
       text += "}\n";
       return text;
+   }
+
+   static void declareMatrix(String id, String type, int rows, int cols) {
+      String llvmType = llvmType(type);
+      String matrixType = "[" + rows + " x [" + cols + " x " + llvmType + "]]";
+
+      main_text += "    %" + id + " = alloca " + matrixType + "\n";
+      main_text += "    store " + matrixType + " zeroinitializer, " + matrixType + "* %" + id + "\n";
+   }
+
+   static String getMatrixElementAddress(String id, String type, int rows, int cols, String rowReg, String colReg) {
+      String llvmType = llvmType(type);
+      main_text += "    %" + reg + " = getelementptr inbounds [" + rows + " x [" + cols + " x " + llvmType + "]], [" + rows + " x [" + cols + " x " + llvmType + "]]* %" + id + ", i32 0, i32 " + rowReg + ", i32 " + colReg + "\n";
+      String address = "%" + reg;
+      reg++;
+      return address;
+   }
+
+   static void printMatrix(String id, String type, int rows, int cols) {
+      for (int i = 0; i < rows; i++) {
+         for (int j = 0; j < cols; j++) {
+            String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(j));
+            loadArrayElement(address, type);
+            String valueReg = "%" + (reg - 1);
+            print(valueReg, type);
+         }
+      }
+   }
+
+   static void printMatrixRow(String id, String type, int rows, int cols, int row) {
+      for (int j = 0; j < cols; j++) {
+         String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(row), Integer.toString(j));
+         loadArrayElement(address, type);
+         String valueReg = "%" + (reg - 1);
+         print(valueReg, type);
+      }
+   }
+
+   static void printMatrixColumn(String id, String type, int rows, int cols, int col) {
+      for (int i = 0; i < rows; i++) {
+         String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(col));
+         loadArrayElement(address, type);
+         String valueReg = "%" + (reg - 1);
+         print(valueReg, type);
+      }
    }
 }

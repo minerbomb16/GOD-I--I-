@@ -17,6 +17,66 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitProg(LangXParser.ProgContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declareMatrix}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclareMatrix(LangXParser.DeclareMatrixContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declareMatrix}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclareMatrix(LangXParser.DeclareMatrixContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code assignMatrixElem}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignMatrixElem(LangXParser.AssignMatrixElemContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code assignMatrixElem}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignMatrixElem(LangXParser.AssignMatrixElemContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code readMatrixElem}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterReadMatrixElem(LangXParser.ReadMatrixElemContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code readMatrixElem}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitReadMatrixElem(LangXParser.ReadMatrixElemContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code writeMatrixRow}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteMatrixRow(LangXParser.WriteMatrixRowContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeMatrixRow}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteMatrixRow(LangXParser.WriteMatrixRowContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code writeMatrixColumn}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteMatrixColumn(LangXParser.WriteMatrixColumnContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeMatrixColumn}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteMatrixColumn(LangXParser.WriteMatrixColumnContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code declareArray}
 	 * labeled alternative in {@link LangXParser#start}.
 	 * @param ctx the parse tree
@@ -326,6 +386,18 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitRealConst(LangXParser.RealConstContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code matrixElem}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterMatrixElem(LangXParser.MatrixElemContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code matrixElem}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitMatrixElem(LangXParser.MatrixElemContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code falseConst}
 	 * labeled alternative in {@link LangXParser#expr}.

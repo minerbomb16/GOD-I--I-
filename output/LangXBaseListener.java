@@ -28,6 +28,66 @@ public class LangXBaseListener implements LangXListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDeclareMatrix(LangXParser.DeclareMatrixContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclareMatrix(LangXParser.DeclareMatrixContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignMatrixElem(LangXParser.AssignMatrixElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignMatrixElem(LangXParser.AssignMatrixElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterReadMatrixElem(LangXParser.ReadMatrixElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitReadMatrixElem(LangXParser.ReadMatrixElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWriteMatrixRow(LangXParser.WriteMatrixRowContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWriteMatrixRow(LangXParser.WriteMatrixRowContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWriteMatrixColumn(LangXParser.WriteMatrixColumnContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWriteMatrixColumn(LangXParser.WriteMatrixColumnContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDeclareArray(LangXParser.DeclareArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -335,6 +395,18 @@ public class LangXBaseListener implements LangXListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitRealConst(LangXParser.RealConstContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMatrixElem(LangXParser.MatrixElemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMatrixElem(LangXParser.MatrixElemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

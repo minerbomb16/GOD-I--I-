@@ -9,12 +9,19 @@ class Value {
     public boolean isArray;
     public int arraySize;
 
+    public boolean isMatrix;
+    public int rows;
+    public int cols;
+
     public Value(String name, String type, int length) {
         this.name = name;
         this.type = type;
         this.length = length;
         this.isArray = false;
         this.arraySize = 0;
+        this.isMatrix = false;
+        this.rows = 0;
+        this.cols = 0;
     }
 
     public Value(String name, String type, int length, boolean isArray, int arraySize) {
@@ -23,6 +30,20 @@ class Value {
         this.length = length;
         this.isArray = isArray;
         this.arraySize = arraySize;
+         this.isMatrix = false;
+        this.rows = 0;
+        this.cols = 0;
+    }
+
+     public Value(String name, String type, int length, boolean isMatrix, int rows, int cols) {
+        this.name = name;
+        this.type = type;
+        this.length = length;
+        this.isArray = false;
+        this.arraySize = 0;
+        this.isMatrix = isMatrix;
+        this.rows = rows;
+        this.cols = cols;
     }
 }
 
@@ -102,7 +123,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
-        if (var.isArray) {
+        if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Cannot assign to whole array " + ID + ". Use " + ID + "[index].");
             System.exit(1);
         }
@@ -150,7 +171,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
-        if (var.isArray) {
+        if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Cannot Confess whole array " + ID + ". Use " + ID + "[index].");
             System.exit(1);
         }
@@ -183,7 +204,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
-        if (var.isArray) {
+        if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Array " + ID + " requires index.");
             System.exit(1);
         }
@@ -464,7 +485,9 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value val = variables.get(ID);
-        if (val.isArray) {
+        if (val.isMatrix) {
+            LLVMGenerator.printMatrix(ID, val.type, val.rows, val.cols);
+        } else if (val.isArray) {
             LLVMGenerator.printArray(ID, val.type, val.arraySize);
         } else {
             LLVMGenerator.load(ID, val.type);
@@ -556,4 +579,145 @@ public class LLVMActions extends LangXBaseListener {
         String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
         LLVMGenerator.readArrayElement(address, arr.type);
     }
+
+    private Value getMatrixOrDie(String ID, int line) {
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error (line " + line + "): Matrix " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value matrix = variables.get(ID);
+        if (!matrix.isMatrix) {
+            System.err.println("Semantic error (line " + line + "): " + ID + " is not a matrix.");
+            System.exit(1);
+        }
+        return matrix;
+    }
+
+    private void checkMatrixIndexIfConst(String ID, Value matrix, Value row, Value col, int line) {
+        if (row.name.matches("-?\\d+")) {
+            int r = Integer.parseInt(row.name);
+            if (r < 0 || r >= matrix.rows) {
+                System.err.println( "Semantic error (line " + line + "): Matrix row out of bounds: " + ID + "[" + r + "][...]. Valid rows are 0.." + (matrix.rows - 1) + ".");
+                System.exit(1);
+            }
+        }
+        if (col.name.matches("-?\\d+")) {
+            int c = Integer.parseInt(col.name);
+            if (c < 0 || c >= matrix.cols) {
+                System.err.println("Semantic error (line " + line + "): Matrix column out of bounds: "+ ID + "[...][" + c + "]. Valid columns are 0.." + (matrix.cols - 1) + ".");
+                System.exit(1);
+            }
+        }
+    }
+
+    @Override
+    public void exitDeclareMatrix(LangXParser.DeclareMatrixContext ctx) {
+        String ID = ctx.ID().getText();
+        String type = ctx.type().getText();
+        int rows = Integer.parseInt(ctx.INT(0).getText());
+        int cols = Integer.parseInt(ctx.INT(1).getText());
+        if (variables.containsKey(ID)) {
+            System.err.println("Semantic error: Value " + ID + " is already declared!");
+            System.exit(1);
+        }
+        if (type.equals("Eternal") || type.equals("Dogma")) {
+            System.err.println("Semantic error: Only numeric matrices are supported.");
+            System.exit(1);
+        }
+        if (rows <= 0 || cols <= 0) {
+            System.err.println("Semantic error: Matrix dimensions must be greater than 0.");
+            System.exit(1);
+        }
+        variables.put(ID, new Value(ID, type, 0, true, rows, cols));
+        LLVMGenerator.declareMatrix(ID, type, rows, cols);
+    }
+
+    @Override
+    public void exitMatrixElem(LangXParser.MatrixElemContext ctx) {
+        String ID = ctx.ID().getText();
+        Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
+        Value col = stack.pop();
+        Value row = stack.pop();
+        if (!row.type.equals("Mortal") || !col.type.equals("Mortal")) {
+            System.err.println("Semantic error: Matrix indexes must be Mortal.");
+            System.exit(1);
+        }
+        checkMatrixIndexIfConst(ID, matrix, row, col, ctx.getStart().getLine());
+        String address = LLVMGenerator.getMatrixElementAddress(ID, matrix.type, matrix.rows,matrix.cols,row.name, col.name);
+        LLVMGenerator.loadArrayElement(address, matrix.type);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), matrix.type, 0));
+    }
+
+    @Override
+    public void exitAssignMatrixElem(LangXParser.AssignMatrixElemContext ctx) {
+        String ID = ctx.ID().getText();
+        Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
+        Value val = stack.pop();
+        Value col = stack.pop();
+        Value row = stack.pop();
+        if (!row.type.equals("Mortal") || !col.type.equals("Mortal")) {
+            System.err.println("Semantic error: Matrix indexes must be Mortal.");
+            System.exit(1);
+        }
+        checkMatrixIndexIfConst(ID, matrix, row, col, ctx.getStart().getLine());
+        String finalValueReg = val.name;
+        if (!matrix.type.equals(val.type)) {
+            if (matrix.type.equals("SmallDivine") && val.type.equals("Divine")) {
+                finalValueReg = LLVMGenerator.double_to_float(val.name);
+            } else if (matrix.type.equals("Divine") && val.type.equals("SmallDivine")) {
+                finalValueReg = LLVMGenerator.float_to_double(val.name);
+            } else {
+                System.err.println("Semantic error: Cannot assign " + val.type + " to matrix of " + matrix.type + ".");
+                System.exit(1);
+            }
+        }
+        String address = LLVMGenerator.getMatrixElementAddress(ID, matrix.type, matrix.rows, matrix.cols, row.name,col.name);
+        LLVMGenerator.assignArrayElement(address, finalValueReg, matrix.type);
+    }
+
+    @Override
+    public void exitReadMatrixElem(LangXParser.ReadMatrixElemContext ctx) {
+        String ID = ctx.ID().getText();
+        Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
+        Value col = stack.pop();
+        Value row = stack.pop();
+        if (!row.type.equals("Mortal") || !col.type.equals("Mortal")) {
+            System.err.println("Semantic error: Matrix indexes must be Mortal.");
+            System.exit(1);
+        }
+        checkMatrixIndexIfConst(ID, matrix, row, col, ctx.getStart().getLine());
+        String address = LLVMGenerator.getMatrixElementAddress( ID,matrix.type,matrix.rows, matrix.cols,row.name,col.name);
+        LLVMGenerator.readArrayElement(address, matrix.type);
+    }
+
+    @Override
+    public void exitWriteMatrixRow(LangXParser.WriteMatrixRowContext ctx) {
+        String ID = ctx.ID().getText();
+        Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
+        int row = Integer.parseInt(ctx.INT().getText());
+        if (row < 0 || row >= matrix.rows) {
+            System.err.println(
+                "Semantic error: Matrix row out of bounds: "
+                + ID + "[" + row + "]. Valid rows are 0.." + (matrix.rows - 1) + "."
+            );
+            System.exit(1);
+        }
+        LLVMGenerator.printMatrixRow(ID, matrix.type, matrix.rows, matrix.cols, row);
+    }
+
+    @Override
+    public void exitWriteMatrixColumn(LangXParser.WriteMatrixColumnContext ctx) {
+        String ID = ctx.ID().getText();
+        Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
+        int col = Integer.parseInt(ctx.INT().getText());
+        if (col < 0 || col >= matrix.cols) {
+            System.err.println(
+                "Semantic error: Matrix column out of bounds: "
+                + ID + "[" + col + "]. Valid columns are 0.." + (matrix.cols - 1) + "."
+            );
+            System.exit(1);
+        }
+        LLVMGenerator.printMatrixColumn(ID, matrix.type, matrix.rows, matrix.cols, col);
+    }
+ 
 }
