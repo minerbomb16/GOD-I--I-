@@ -1,4 +1,4 @@
-Create Dogma x in the image of Heven;
+Create Dogma x in the image of Heaven;
 Reveal x;
 
 x be transformed into Hell;
@@ -14,7 +14,7 @@ Create Dogma x3;
 Confess x3;
 Reveal x3;
 
-Create Dogma a in the image of Heven;
+Create Dogma a in the image of Heaven;
 Create Dogma b in the image of Hell;
 
 Create Dogma c in the image of a AND b;

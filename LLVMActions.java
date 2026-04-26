@@ -37,7 +37,7 @@ public class LLVMActions extends LangXBaseListener {
         if (val.name.equals("1")) return "true";
 
         System.err.println(
-            "Semantic error (line " + line + "): Dogma can be assigned only Heven, Hell, 0 or 1."
+            "Semantic error (line " + line + "): Dogma can be assigned only Heaven, Hell, 0 or 1."
         );
         System.exit(1);
         return "";
@@ -101,6 +101,10 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         Value var = variables.get(ID);
+        if (var.isArray) {
+            System.err.println("Semantic error: Cannot assign to whole array " + ID + ". Use " + ID + "[index].");
+            System.exit(1);
+        }
         Value val = stack.pop();
         
         String finalValueReg = val.name;
@@ -331,6 +335,20 @@ public class LLVMActions extends LangXBaseListener {
         LLVMGenerator.logicNeg(v.name);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
     }
+
+    private void checkArrayIndexIfConst(String ID, Value arr, Value index, int line) {
+        if (index.name.matches("-?\\d+")) {
+            int idx = Integer.parseInt(index.name);
+            if (idx < 0 || idx >= arr.arraySize) {
+                System.err.println(
+                    "Semantic error (line " + line + "): Array index out of bounds: "
+                    + ID + "[" + idx + "]. Valid range is 0.." + (arr.arraySize - 1) + "."
+                );
+                System.exit(1);
+            }
+        }
+    }
+
     @Override
     public void exitDeclareArray(LangXParser.DeclareArrayContext ctx) {
         String ID = ctx.ID().getText();
@@ -341,17 +359,14 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
-
         if (type.equals("Eternal")) {
             System.err.println("Semantic error: Eternal arrays are not supported yet.");
             System.exit(1);
         }
-
         if (size <= 0) {
             System.err.println("Semantic error: Array size must be greater than 0.");
             System.exit(1);
         }
-
         variables.put(ID, new Value(ID, type, 0, true, size));
         LLVMGenerator.declareArray(ID, type, size);
     }
@@ -373,6 +388,7 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Array index must be Mortal.");
             System.exit(1);
         }
+        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
         String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
         LLVMGenerator.loadArrayElement(address, arr.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), arr.type, 0));
@@ -396,6 +412,7 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Array index must be Mortal.");
             System.exit(1);
         }
+        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
         String finalValueReg = val.name;
         if (!arr.type.equals(val.type)) {
             if (arr.type.equals("SmallDivine") && val.type.equals("Divine")) {
@@ -428,6 +445,70 @@ public class LLVMActions extends LangXBaseListener {
             LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), val.type);
         }
     }
+
+    @Override
+    public void exitWriteArrayRange(LangXParser.WriteArrayRangeContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        int start = Integer.parseInt(ctx.INT(0).getText());
+        int end = Integer.parseInt(ctx.INT(1).getText());
+        if (start < 0 || end >= arr.arraySize || start > end) {
+            System.err.println("Semantic error: Invalid array range " + ID + "[" + start + ":" + end + "].");
+            System.exit(1);
+        }
+        LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
+    }
+
+    @Override
+    public void exitWriteArrayFrom(LangXParser.WriteArrayFromContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        int start = Integer.parseInt(ctx.INT().getText());
+        int end = arr.arraySize - 1;
+        if (start < 0 || start >= arr.arraySize) {
+            System.err.println("Semantic error: Invalid array range " + ID + "[" + start + ":].");
+            System.exit(1);
+        }
+        LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
+    }
+
+    @Override
+    public void exitWriteArrayTo(LangXParser.WriteArrayToContext ctx) {
+        String ID = ctx.ID().getText();
+        if (!variables.containsKey(ID)) {
+            System.err.println("Semantic error: Array " + ID + " does not exist!");
+            System.exit(1);
+        }
+        Value arr = variables.get(ID);
+        if (!arr.isArray) {
+            System.err.println("Semantic error: " + ID + " is not an array.");
+            System.exit(1);
+        }
+        int start = 0;
+        int end = Integer.parseInt(ctx.INT().getText());
+        if (end < 0 || end >= arr.arraySize) {
+            System.err.println("Semantic error: Invalid array range " + ID + "[:" + end + "].");
+            System.exit(1);
+        }
+        LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
+    }
+
     @Override
     public void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx) {
         String ID = ctx.ID().getText();
@@ -445,6 +526,7 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Array index must be Mortal.");
             System.exit(1);
         }
+        checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
         String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
         LLVMGenerator.readArrayElement(address, arr.type);
     }
