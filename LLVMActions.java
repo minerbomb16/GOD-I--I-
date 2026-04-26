@@ -277,18 +277,11 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitUnaryMinus(LangXParser.UnaryMinusContext ctx) {
         Value v = stack.pop();
-        
         if (!v.type.equals("Mortal") && !v.type.equals("Divine") && !v.type.equals("SmallDivine")) {
             System.err.println("Semantic error: Unary minus (-) requires a numeric type (Mortal, Divine or SmallDivine).");
             System.exit(1);
         }
-
-        Value var = variables.get(ID);
-        if (var.isArray || var.isMatrix) {
-            System.err.println("Semantic error: Array " + ID + " requires index.");
-            System.exit(1);
-
-        if (v.name.matches("\\d+") || v.name.matches("\\d+\\.\\d+")) {
+        if (v.name.matches("\\d+(\\.\\d+)?")) {
             stack.push(new Value("-" + v.name, v.type, 0));
         } else {
             LLVMGenerator.unaryMinus(v.name, v.type);
@@ -516,7 +509,6 @@ public class LLVMActions extends LangXBaseListener {
         }
     }
 
-    @Override
     private void printArraySlice(String ID, Integer startParam, Integer endParam, String rangeText) {
 
         if (!variables.containsKey(ID)) {
