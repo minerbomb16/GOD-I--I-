@@ -668,10 +668,7 @@ public class LLVMActions extends LangXBaseListener {
         Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
         int row = Integer.parseInt(ctx.INT().getText());
         if (row < 0 || row >= matrix.rows) {
-            System.err.println(
-                "Semantic error: Matrix row out of bounds: "
-                + ID + "[" + row + "]. Valid rows are 0.." + (matrix.rows - 1) + "."
-            );
+            System.err.println("Semantic error: Matrix row out of bounds: "+ ID + "[" + row + "]. Valid rows are 0.." + (matrix.rows - 1) + ".");
             System.exit(1);
         }
         LLVMGenerator.printMatrixRow(ID, matrix.type, matrix.rows, matrix.cols, row);
@@ -683,10 +680,7 @@ public class LLVMActions extends LangXBaseListener {
         Value matrix = getMatrixOrDie(ID, ctx.getStart().getLine());
         int col = Integer.parseInt(ctx.INT().getText());
         if (col < 0 || col >= matrix.cols) {
-            System.err.println(
-                "Semantic error: Matrix column out of bounds: "
-                + ID + "[" + col + "]. Valid columns are 0.." + (matrix.cols - 1) + "."
-            );
+            System.err.println("Semantic error: Matrix column out of bounds: " + ID + "[" + col + "]. Valid columns are 0.." + (matrix.cols - 1) + ".");
             System.exit(1);
         }
         LLVMGenerator.printMatrixColumn(ID, matrix.type, matrix.rows, matrix.cols, col);
