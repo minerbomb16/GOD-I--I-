@@ -741,244 +741,249 @@ and_end_4:
     store i32 110, i32* %410
     %411 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 3
     store i32 120, i32* %411
+    %412 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
+    call void @readInt(i32* %412)
+    %413 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
+    %414 = load i32, i32* %413
+    %415 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %414)
     %str88 = alloca [31 x i8]
-    %412 = bitcast [31 x i8]* %str88 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %412, i8* align 1 getelementptr inbounds ([31 x i8], [31 x i8]* @str88, i32 0, i32 0), i64 31, i1 false)
-    %413 = getelementptr inbounds [31 x i8], [31 x i8]* %str88, i32 0, i32 0
-    %414 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
-    %415 = load i32, i32* %414
+    %416 = bitcast [31 x i8]* %str88 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %416, i8* align 1 getelementptr inbounds ([31 x i8], [31 x i8]* @str88, i32 0, i32 0), i64 31, i1 false)
+    %417 = getelementptr inbounds [31 x i8], [31 x i8]* %str88, i32 0, i32 0
+    %418 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
+    %419 = load i32, i32* %418
     %str89 = alloca [17 x i8]
-    %416 = getelementptr inbounds [17 x i8], [17 x i8]* %str89, i32 0, i32 0
-    %417 = call i32 (i8*, i8*, ...) @sprintf(i8* %416, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %415)
+    %420 = getelementptr inbounds [17 x i8], [17 x i8]* %str89, i32 0, i32 0
+    %421 = call i32 (i8*, i8*, ...) @sprintf(i8* %420, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %419)
     %str90 = alloca [47 x i8]
-    %418 = getelementptr inbounds [47 x i8], [47 x i8]* %str90, i32 0, i32 0
-    %419 = call i8* @strcpy(i8* %418, i8* %413)
-    %420 = call i8* @strcat(i8* %418, i8* %416)
-    %421 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %418)
+    %422 = getelementptr inbounds [47 x i8], [47 x i8]* %str90, i32 0, i32 0
+    %423 = call i8* @strcpy(i8* %422, i8* %417)
+    %424 = call i8* @strcat(i8* %422, i8* %420)
+    %425 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %422)
     %str91 = alloca [21 x i8]
-    %422 = bitcast [21 x i8]* %str91 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %422, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str91, i32 0, i32 0), i64 21, i1 false)
-    %423 = getelementptr inbounds [21 x i8], [21 x i8]* %str91, i32 0, i32 0
-    %424 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %423)
-    %425 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 0
-    %426 = load i32, i32* %425
-    %427 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %426)
-    %428 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 1
-    %429 = load i32, i32* %428
-    %430 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %429)
-    %431 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 2
-    %432 = load i32, i32* %431
-    %433 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %432)
-    %434 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 3
-    %435 = load i32, i32* %434
-    %436 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %435)
-    %437 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 0
-    %438 = load i32, i32* %437
-    %439 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %438)
-    %440 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 1
-    %441 = load i32, i32* %440
-    %442 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %441)
-    %443 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
-    %444 = load i32, i32* %443
-    %445 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %444)
-    %446 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 3
-    %447 = load i32, i32* %446
-    %448 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %447)
-    %449 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 0
-    %450 = load i32, i32* %449
-    %451 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %450)
-    %452 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 1
-    %453 = load i32, i32* %452
-    %454 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %453)
-    %455 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 2
-    %456 = load i32, i32* %455
-    %457 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %456)
-    %458 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 3
-    %459 = load i32, i32* %458
-    %460 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %459)
+    %426 = bitcast [21 x i8]* %str91 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %426, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str91, i32 0, i32 0), i64 21, i1 false)
+    %427 = getelementptr inbounds [21 x i8], [21 x i8]* %str91, i32 0, i32 0
+    %428 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %427)
+    %429 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 0
+    %430 = load i32, i32* %429
+    %431 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %430)
+    %432 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 1
+    %433 = load i32, i32* %432
+    %434 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %433)
+    %435 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 2
+    %436 = load i32, i32* %435
+    %437 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %436)
+    %438 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 3
+    %439 = load i32, i32* %438
+    %440 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %439)
+    %441 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 0
+    %442 = load i32, i32* %441
+    %443 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %442)
+    %444 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 1
+    %445 = load i32, i32* %444
+    %446 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %445)
+    %447 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
+    %448 = load i32, i32* %447
+    %449 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %448)
+    %450 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 3
+    %451 = load i32, i32* %450
+    %452 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %451)
+    %453 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 0
+    %454 = load i32, i32* %453
+    %455 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %454)
+    %456 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 1
+    %457 = load i32, i32* %456
+    %458 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %457)
+    %459 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 2
+    %460 = load i32, i32* %459
+    %461 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %460)
+    %462 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 3
+    %463 = load i32, i32* %462
+    %464 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %463)
     %str92 = alloca [21 x i8]
-    %461 = bitcast [21 x i8]* %str92 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %461, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str92, i32 0, i32 0), i64 21, i1 false)
-    %462 = getelementptr inbounds [21 x i8], [21 x i8]* %str92, i32 0, i32 0
-    %463 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %462)
-    %464 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 0
-    %465 = load i32, i32* %464
-    %466 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %465)
-    %467 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 1
-    %468 = load i32, i32* %467
-    %469 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %468)
-    %470 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 2
-    %471 = load i32, i32* %470
-    %472 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %471)
-    %473 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 3
-    %474 = load i32, i32* %473
-    %475 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %474)
+    %465 = bitcast [21 x i8]* %str92 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %465, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str92, i32 0, i32 0), i64 21, i1 false)
+    %466 = getelementptr inbounds [21 x i8], [21 x i8]* %str92, i32 0, i32 0
+    %467 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %466)
+    %468 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 0
+    %469 = load i32, i32* %468
+    %470 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %469)
+    %471 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 1
+    %472 = load i32, i32* %471
+    %473 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %472)
+    %474 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 2
+    %475 = load i32, i32* %474
+    %476 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %475)
+    %477 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 3
+    %478 = load i32, i32* %477
+    %479 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %478)
     %str93 = alloca [21 x i8]
-    %476 = bitcast [21 x i8]* %str93 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %476, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str93, i32 0, i32 0), i64 21, i1 false)
-    %477 = getelementptr inbounds [21 x i8], [21 x i8]* %str93, i32 0, i32 0
-    %478 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %477)
-    %479 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 0
-    %480 = load i32, i32* %479
-    %481 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %480)
-    %482 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 1
-    %483 = load i32, i32* %482
-    %484 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %483)
-    %485 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
-    %486 = load i32, i32* %485
-    %487 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %486)
-    %488 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 3
-    %489 = load i32, i32* %488
-    %490 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %489)
+    %480 = bitcast [21 x i8]* %str93 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %480, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str93, i32 0, i32 0), i64 21, i1 false)
+    %481 = getelementptr inbounds [21 x i8], [21 x i8]* %str93, i32 0, i32 0
+    %482 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %481)
+    %483 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 0
+    %484 = load i32, i32* %483
+    %485 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %484)
+    %486 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 1
+    %487 = load i32, i32* %486
+    %488 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %487)
+    %489 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
+    %490 = load i32, i32* %489
+    %491 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %490)
+    %492 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 3
+    %493 = load i32, i32* %492
+    %494 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %493)
     %str94 = alloca [24 x i8]
-    %491 = bitcast [24 x i8]* %str94 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %491, i8* align 1 getelementptr inbounds ([24 x i8], [24 x i8]* @str94, i32 0, i32 0), i64 24, i1 false)
-    %492 = getelementptr inbounds [24 x i8], [24 x i8]* %str94, i32 0, i32 0
-    %493 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %492)
-    %494 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 2
-    %495 = load i32, i32* %494
-    %496 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %495)
-    %497 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
-    %498 = load i32, i32* %497
-    %499 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %498)
-    %500 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 2
-    %501 = load i32, i32* %500
-    %502 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %501)
+    %495 = bitcast [24 x i8]* %str94 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %495, i8* align 1 getelementptr inbounds ([24 x i8], [24 x i8]* @str94, i32 0, i32 0), i64 24, i1 false)
+    %496 = getelementptr inbounds [24 x i8], [24 x i8]* %str94, i32 0, i32 0
+    %497 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %496)
+    %498 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 0, i32 2
+    %499 = load i32, i32* %498
+    %500 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %499)
+    %501 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 1, i32 2
+    %502 = load i32, i32* %501
+    %503 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %502)
+    %504 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 2, i32 2
+    %505 = load i32, i32* %504
+    %506 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %505)
     %rowIndex = alloca i32
     store i32 2, i32* %rowIndex
     %colIndex = alloca i32
     store i32 3, i32* %colIndex
     %str95 = alloca [45 x i8]
-    %503 = bitcast [45 x i8]* %str95 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %503, i8* align 1 getelementptr inbounds ([45 x i8], [45 x i8]* @str95, i32 0, i32 0), i64 45, i1 false)
-    %504 = getelementptr inbounds [45 x i8], [45 x i8]* %str95, i32 0, i32 0
-    %505 = load i32, i32* %rowIndex
-    %506 = load i32, i32* %colIndex
-    %507 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 %505, i32 %506
-    %508 = load i32, i32* %507
+    %507 = bitcast [45 x i8]* %str95 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %507, i8* align 1 getelementptr inbounds ([45 x i8], [45 x i8]* @str95, i32 0, i32 0), i64 45, i1 false)
+    %508 = getelementptr inbounds [45 x i8], [45 x i8]* %str95, i32 0, i32 0
+    %509 = load i32, i32* %rowIndex
+    %510 = load i32, i32* %colIndex
+    %511 = getelementptr inbounds [3 x [4 x i32]], [3 x [4 x i32]]* %matrix, i32 0, i32 %509, i32 %510
+    %512 = load i32, i32* %511
     %str96 = alloca [17 x i8]
-    %509 = getelementptr inbounds [17 x i8], [17 x i8]* %str96, i32 0, i32 0
-    %510 = call i32 (i8*, i8*, ...) @sprintf(i8* %509, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %508)
+    %513 = getelementptr inbounds [17 x i8], [17 x i8]* %str96, i32 0, i32 0
+    %514 = call i32 (i8*, i8*, ...) @sprintf(i8* %513, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %512)
     %str97 = alloca [61 x i8]
-    %511 = getelementptr inbounds [61 x i8], [61 x i8]* %str97, i32 0, i32 0
-    %512 = call i8* @strcpy(i8* %511, i8* %504)
-    %513 = call i8* @strcat(i8* %511, i8* %509)
-    %514 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %511)
+    %515 = getelementptr inbounds [61 x i8], [61 x i8]* %str97, i32 0, i32 0
+    %516 = call i8* @strcpy(i8* %515, i8* %508)
+    %517 = call i8* @strcat(i8* %515, i8* %513)
+    %518 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %515)
     %divineMatrix = alloca [2 x [2 x double]]
     store [2 x [2 x double]] zeroinitializer, [2 x [2 x double]]* %divineMatrix
-    %515 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 0
-    store double 1.1, double* %515
-    %516 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 1
-    store double 2.2, double* %516
-    %517 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
-    store double 3.3, double* %517
-    %518 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 1
-    store double 4.4, double* %518
+    %519 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 0
+    store double 1.1, double* %519
+    %520 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 1
+    store double 2.2, double* %520
+    %521 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
+    store double 3.3, double* %521
+    %522 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 1
+    store double 4.4, double* %522
     %str98 = alloca [21 x i8]
-    %519 = bitcast [21 x i8]* %str98 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %519, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str98, i32 0, i32 0), i64 21, i1 false)
-    %520 = getelementptr inbounds [21 x i8], [21 x i8]* %str98, i32 0, i32 0
-    %521 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %520)
-    %522 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 0
-    %523 = load double, double* %522
-    %524 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %523)
-    %525 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 1
-    %526 = load double, double* %525
-    %527 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %526)
-    %528 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
-    %529 = load double, double* %528
-    %530 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %529)
-    %531 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 1
-    %532 = load double, double* %531
-    %533 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %532)
+    %523 = bitcast [21 x i8]* %str98 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %523, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str98, i32 0, i32 0), i64 21, i1 false)
+    %524 = getelementptr inbounds [21 x i8], [21 x i8]* %str98, i32 0, i32 0
+    %525 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %524)
+    %526 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 0
+    %527 = load double, double* %526
+    %528 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %527)
+    %529 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 1
+    %530 = load double, double* %529
+    %531 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %530)
+    %532 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
+    %533 = load double, double* %532
+    %534 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %533)
+    %535 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 1
+    %536 = load double, double* %535
+    %537 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %536)
     %str99 = alloca [21 x i8]
-    %534 = bitcast [21 x i8]* %str99 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %534, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str99, i32 0, i32 0), i64 21, i1 false)
-    %535 = getelementptr inbounds [21 x i8], [21 x i8]* %str99, i32 0, i32 0
-    %536 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %535)
-    %537 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
-    %538 = load double, double* %537
-    %539 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %538)
-    %540 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 1
-    %541 = load double, double* %540
-    %542 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %541)
+    %538 = bitcast [21 x i8]* %str99 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %538, i8* align 1 getelementptr inbounds ([21 x i8], [21 x i8]* @str99, i32 0, i32 0), i64 21, i1 false)
+    %539 = getelementptr inbounds [21 x i8], [21 x i8]* %str99, i32 0, i32 0
+    %540 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %539)
+    %541 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
+    %542 = load double, double* %541
+    %543 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %542)
+    %544 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 1
+    %545 = load double, double* %544
+    %546 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %545)
     %str100 = alloca [24 x i8]
-    %543 = bitcast [24 x i8]* %str100 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %543, i8* align 1 getelementptr inbounds ([24 x i8], [24 x i8]* @str100, i32 0, i32 0), i64 24, i1 false)
-    %544 = getelementptr inbounds [24 x i8], [24 x i8]* %str100, i32 0, i32 0
-    %545 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %544)
-    %546 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 0
-    %547 = load double, double* %546
-    %548 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %547)
-    %549 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
-    %550 = load double, double* %549
-    %551 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %550)
+    %547 = bitcast [24 x i8]* %str100 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %547, i8* align 1 getelementptr inbounds ([24 x i8], [24 x i8]* @str100, i32 0, i32 0), i64 24, i1 false)
+    %548 = getelementptr inbounds [24 x i8], [24 x i8]* %str100, i32 0, i32 0
+    %549 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %548)
+    %550 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 0, i32 0
+    %551 = load double, double* %550
+    %552 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %551)
+    %553 = getelementptr inbounds [2 x [2 x double]], [2 x [2 x double]]* %divineMatrix, i32 0, i32 1, i32 0
+    %554 = load double, double* %553
+    %555 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %554)
     %smallDivineMatrix = alloca [2 x [2 x float]]
     store [2 x [2 x float]] zeroinitializer, [2 x [2 x float]]* %smallDivineMatrix
-    %552 = fptrunc double 5.5 to float
-    %553 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 0
-    store float %552, float* %553
-    %554 = fptrunc double 6.6 to float
-    %555 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
-    store float %554, float* %555
-    %556 = fptrunc double 7.7 to float
-    %557 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 0
+    %556 = fptrunc double 5.5 to float
+    %557 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 0
     store float %556, float* %557
-    %558 = fptrunc double 8.8 to float
-    %559 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 1
+    %558 = fptrunc double 6.6 to float
+    %559 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
     store float %558, float* %559
+    %560 = fptrunc double 7.7 to float
+    %561 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 0
+    store float %560, float* %561
+    %562 = fptrunc double 8.8 to float
+    %563 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 1
+    store float %562, float* %563
     %str101 = alloca [26 x i8]
-    %560 = bitcast [26 x i8]* %str101 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %560, i8* align 1 getelementptr inbounds ([26 x i8], [26 x i8]* @str101, i32 0, i32 0), i64 26, i1 false)
-    %561 = getelementptr inbounds [26 x i8], [26 x i8]* %str101, i32 0, i32 0
-    %562 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %561)
-    %563 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 0
-    %564 = load float, float* %563
-    %565 = fpext float %564 to double
-    %566 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %565)
-    %567 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
+    %564 = bitcast [26 x i8]* %str101 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %564, i8* align 1 getelementptr inbounds ([26 x i8], [26 x i8]* @str101, i32 0, i32 0), i64 26, i1 false)
+    %565 = getelementptr inbounds [26 x i8], [26 x i8]* %str101, i32 0, i32 0
+    %566 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %565)
+    %567 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 0
     %568 = load float, float* %567
     %569 = fpext float %568 to double
     %570 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %569)
-    %571 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 0
+    %571 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
     %572 = load float, float* %571
     %573 = fpext float %572 to double
     %574 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %573)
-    %575 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 1
+    %575 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 0
     %576 = load float, float* %575
     %577 = fpext float %576 to double
     %578 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %577)
+    %579 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 1
+    %580 = load float, float* %579
+    %581 = fpext float %580 to double
+    %582 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %581)
     %str102 = alloca [26 x i8]
-    %579 = bitcast [26 x i8]* %str102 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %579, i8* align 1 getelementptr inbounds ([26 x i8], [26 x i8]* @str102, i32 0, i32 0), i64 26, i1 false)
-    %580 = getelementptr inbounds [26 x i8], [26 x i8]* %str102, i32 0, i32 0
-    %581 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %580)
-    %582 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 0
-    %583 = load float, float* %582
-    %584 = fpext float %583 to double
-    %585 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %584)
-    %586 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
+    %583 = bitcast [26 x i8]* %str102 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %583, i8* align 1 getelementptr inbounds ([26 x i8], [26 x i8]* @str102, i32 0, i32 0), i64 26, i1 false)
+    %584 = getelementptr inbounds [26 x i8], [26 x i8]* %str102, i32 0, i32 0
+    %585 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %584)
+    %586 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 0
     %587 = load float, float* %586
     %588 = fpext float %587 to double
     %589 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %588)
+    %590 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
+    %591 = load float, float* %590
+    %592 = fpext float %591 to double
+    %593 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %592)
     %str103 = alloca [29 x i8]
-    %590 = bitcast [29 x i8]* %str103 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %590, i8* align 1 getelementptr inbounds ([29 x i8], [29 x i8]* @str103, i32 0, i32 0), i64 29, i1 false)
-    %591 = getelementptr inbounds [29 x i8], [29 x i8]* %str103, i32 0, i32 0
-    %592 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %591)
-    %593 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
-    %594 = load float, float* %593
-    %595 = fpext float %594 to double
-    %596 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %595)
-    %597 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 1
+    %594 = bitcast [29 x i8]* %str103 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %594, i8* align 1 getelementptr inbounds ([29 x i8], [29 x i8]* @str103, i32 0, i32 0), i64 29, i1 false)
+    %595 = getelementptr inbounds [29 x i8], [29 x i8]* %str103, i32 0, i32 0
+    %596 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %595)
+    %597 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 0, i32 1
     %598 = load float, float* %597
     %599 = fpext float %598 to double
     %600 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %599)
+    %601 = getelementptr inbounds [2 x [2 x float]], [2 x [2 x float]]* %smallDivineMatrix, i32 0, i32 1, i32 1
+    %602 = load float, float* %601
+    %603 = fpext float %602 to double
+    %604 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %603)
     %str104 = alloca [1 x i8]
-    %601 = bitcast [1 x i8]* %str104 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %601, i8* align 1 getelementptr inbounds ([1 x i8], [1 x i8]* @str104, i32 0, i32 0), i64 1, i1 false)
-    %602 = getelementptr inbounds [1 x i8], [1 x i8]* %str104, i32 0, i32 0
-    %603 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %602)
+    %605 = bitcast [1 x i8]* %str104 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %605, i8* align 1 getelementptr inbounds ([1 x i8], [1 x i8]* @str104, i32 0, i32 0), i64 1, i1 false)
+    %606 = getelementptr inbounds [1 x i8], [1 x i8]* %str104, i32 0, i32 0
+    %607 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %606)
     ret i32 0
 }
 

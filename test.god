@@ -139,6 +139,8 @@ matrix[2][0] be transformed into 90;
 matrix[2][1] be transformed into 100;
 matrix[2][2] be transformed into 110;
 matrix[2][3] be transformed into 120;
+Confess matrix[1][2];
+Reveal matrix[1][2];
 
 Reveal "Value of Mortal matrix[1][2]: " + matrix[1][2];
 
