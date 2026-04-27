@@ -120,3 +120,74 @@ legion4[0] be transformed into 1;
 Reveal "Whole Dogma table:";
 Reveal legion4;
 Reveal "";
+
+Reveal "========= Matrix operations =========";
+
+Create Mortal matrix[3][4];
+
+matrix[0][0] be transformed into 10;
+matrix[0][1] be transformed into 20;
+matrix[0][2] be transformed into 30;
+matrix[0][3] be transformed into 40;
+
+matrix[1][0] be transformed into 50;
+matrix[1][1] be transformed into 60;
+matrix[1][2] be transformed into 70;
+matrix[1][3] be transformed into 80;
+
+matrix[2][0] be transformed into 90;
+matrix[2][1] be transformed into 100;
+matrix[2][2] be transformed into 110;
+matrix[2][3] be transformed into 120;
+Confess matrix[1][2];
+Reveal matrix[1][2];
+
+Reveal "Value of Mortal matrix[1][2]: " + matrix[1][2];
+
+Reveal "Whole Mortal matrix:";
+Reveal matrix;
+
+Reveal "Mortal matrix row 0:";
+Reveal row matrix[0];
+
+Reveal "Mortal matrix row 1:";
+Reveal row matrix[1];
+
+Reveal "Mortal matrix column 2:";
+Reveal column matrix[2];
+
+Create Mortal rowIndex in the image of 2;
+Create Mortal colIndex in the image of 3;
+Reveal "Value of Mortal matrix[rowIndex][colIndex]: " + matrix[rowIndex][colIndex];
+
+Create Divine divineMatrix[2][2];
+divineMatrix[0][0] be transformed into 1.1;
+divineMatrix[0][1] be transformed into 2.2;
+divineMatrix[1][0] be transformed into 3.3;
+divineMatrix[1][1] be transformed into 4.4;
+
+Reveal "Whole Divine matrix:";
+Reveal divineMatrix;
+
+Reveal "Divine matrix row 1:";
+Reveal row divineMatrix[1];
+
+Reveal "Divine matrix column 0:";
+Reveal column divineMatrix[0];
+
+Create SmallDivine smallDivineMatrix[2][2];
+smallDivineMatrix[0][0] be transformed into 5.5;
+smallDivineMatrix[0][1] be transformed into 6.6;
+smallDivineMatrix[1][0] be transformed into 7.7;
+smallDivineMatrix[1][1] be transformed into 8.8;
+
+Reveal "Whole SmallDivine matrix:";
+Reveal smallDivineMatrix;
+
+Reveal "SmallDivine matrix row 0:";
+Reveal row smallDivineMatrix[0];
+
+Reveal "SmallDivine matrix column 1:";
+Reveal column smallDivineMatrix[1];
+
+Reveal "";
