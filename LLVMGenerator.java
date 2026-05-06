@@ -22,49 +22,17 @@ class LLVMGenerator {
       main_text += "    %" + id + " = alloca " + llvmType + "\n";
    }
 
-   static void assign(String id, String valueReg, String type) {
-      String llvmType = llvmType(type);
-      main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* %" + id + "\n";
-   }
-
-   static void load(String id, String type) {
-      String llvmType = llvmType(type);
-      main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* %" + id + "\n";
-      reg++;
-   }
-
-   static void declareArray(String id, String type, int size) {
-      String llvmType = llvmType(type);
-      String arrayType = "[" + size + " x " + llvmType + "]";
-      main_text += "    %" + id + " = alloca " + arrayType + "\n";
-      main_text += "    store " + arrayType + " zeroinitializer, " + arrayType + "* %" + id + "\n";
-   }
-
-   static String getArrayElementAddress(String id, String type, int size, String indexReg) {
-      String llvmType = llvmType(type);
-
-      main_text += "    %" + reg + " = getelementptr inbounds ["
-            + size + " x " + llvmType + "], ["
-            + size + " x " + llvmType + "]* %" + id
-            + ", i32 0, i32 " + indexReg + "\n";
-
-      String address = "%" + reg;
-      reg++;
-      return address;
-   }
-
-   static void assignArrayElement(String address, String valueReg, String type) {
+   static void assign(String address, String valueReg, String type) {
       String llvmType = llvmType(type);
       main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* " + address + "\n";
    }
 
-   static void loadArrayElement(String address, String type) {
+   static void load(String address, String type) {
       String llvmType = llvmType(type);
       main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* " + address + "\n";
       reg++;
    }
 
-   
    static void arithmetic(String op, String val1, String val2, String type) {
       String llvmType = "";
       if (type.equals("Mortal")) llvmType = "i32";
@@ -201,25 +169,39 @@ class LLVMGenerator {
       reg++;
    }
 
-   static void printArray(String id, String type, int size) {
-      for (int i = 0; i < size; i++) {
-         String address = getArrayElementAddress(id, type, size, Integer.toString(i));
-         loadArrayElement(address, type);
+   static void declareArray(String id, String type, int size) {
+      String llvmType = llvmType(type);
+      String arrayType = "[" + size + " x " + llvmType + "]";
+      main_text += "    %" + id + " = alloca " + arrayType + "\n";
+      main_text += "    store " + arrayType + " zeroinitializer, " + arrayType + "* %" + id + "\n";
+   }
 
-         String valueReg = "%" + (reg - 1);
-         print(valueReg, type);
-      }
+   static String getArrayElementAddress(String id, String type, int size, String indexReg) {
+      String llvmType = llvmType(type);
+
+      main_text += "    %" + reg + " = getelementptr inbounds ["
+            + size + " x " + llvmType + "], ["
+            + size + " x " + llvmType + "]* %" + id
+            + ", i32 0, i32 " + indexReg + "\n";
+
+      String address = "%" + reg;
+      reg++;
+      return address;
    }
 
    static void printArrayRange(String id, String type, int size, int start, int end) {
-   for (int i = start; i <= end; i++) {
-      String address = getArrayElementAddress(id, type, size, Integer.toString(i));
-      loadArrayElement(address, type);
+      for (int i = start; i <= end; i++) {
+         String address = getArrayElementAddress(id, type, size, Integer.toString(i));
+         load(address, type);
 
-      String valueReg = "%" + (reg - 1);
-      print(valueReg, type);
+         String valueReg = "%" + (reg - 1);
+         print(valueReg, type);
+         }
    }
-}
+
+   static void printArray(String id, String type, int size) {
+      printArrayRange(id, type, size, 0, size - 1);
+   }
 
    static void readArrayElement(String address, String type) {
       if (type.equals("Mortal")) {

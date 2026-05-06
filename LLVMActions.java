@@ -26,12 +26,31 @@ class Value {
     }
 }
 
+
 public class LLVMActions extends LangXBaseListener {
     HashMap<String, Value> variables = new HashMap<>(); 
     Stack<Value> stack = new Stack<>();
     Stack<Integer> brStack = new Stack<>();
     
     static int BUFFER_SIZE = 256; 
+
+    private String getCastedValueReg(String expectedType, Value val, int line) {
+        if (expectedType.equals(val.type)) {
+            return val.name;
+        }
+        
+        if (expectedType.equals("SmallDivine") && val.type.equals("Divine")) {
+            return LLVMGenerator.double_to_float(val.name);
+        } else if (expectedType.equals("Divine") && val.type.equals("SmallDivine")) {
+            return LLVMGenerator.float_to_double(val.name);
+        } else if (expectedType.equals("Dogma") && val.type.equals("Mortal")) {
+            return mortal_to_dogma(val, line);
+        }
+        
+        System.err.println("Semantic error (line " + line + "): Cannot assign " + val.type + " to " + expectedType + ".");
+        System.exit(1);
+        return "";
+    }
 
     private String mortal_to_dogma(Value val, int line) {
         if (val.name.equals("0")) return "false";
@@ -60,24 +79,11 @@ public class LLVMActions extends LangXBaseListener {
         }
         
         Value val = stack.pop();
-        String finalValueReg = val.name;
-
-        if (!type.equals(val.type)) {
-            if (type.equals("SmallDivine") && val.type.equals("Divine")) {
-                finalValueReg = LLVMGenerator.double_to_float(val.name);
-            } else if (type.equals("Divine") && val.type.equals("SmallDivine")) {
-                finalValueReg = LLVMGenerator.float_to_double(val.name);
-            } else if (type.equals("Dogma") && val.type.equals("Mortal")) {
-                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
-            }else {
-                System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign " + val.type + " to " + type + ".");
-                System.exit(1);
-            }
-        }
+        String finalValueReg = getCastedValueReg(type, val, ctx.getStart().getLine());
 
         variables.put(ID, new Value(ID, type, val.length));
         LLVMGenerator.declare(ID, type);
-        LLVMGenerator.assign(ID, finalValueReg, type);
+        LLVMGenerator.assign("%" + ID, finalValueReg, type);
     }
 
     @Override
@@ -108,22 +114,10 @@ public class LLVMActions extends LangXBaseListener {
         }
         Value val = stack.pop();
         
-        String finalValueReg = val.name;
-        if (!var.type.equals(val.type)) {
-            if (var.type.equals("SmallDivine") && val.type.equals("Divine")) {
-                finalValueReg = LLVMGenerator.double_to_float(val.name);
-            } else if (var.type.equals("Divine") && val.type.equals("SmallDivine")) {
-                finalValueReg = LLVMGenerator.float_to_double(val.name);
-            } else if (var.type.equals("Dogma") && val.type.equals("Mortal")) {
-                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
-            } else {
-                System.err.println("Semantic error: Cannot assign " + val.type + " to " + var.type + ".");
-                System.exit(1);
-            }
-        }
+        String finalValueReg = getCastedValueReg(var.type, val, ctx.getStart().getLine());
         
         var.length = val.length; 
-        LLVMGenerator.assign(ID, finalValueReg, var.type);
+        LLVMGenerator.assign("%" + ID, finalValueReg, var.type);
     }
 
     @Override
@@ -187,16 +181,11 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Array " + ID + " requires index.");
             System.exit(1);
         }
-        LLVMGenerator.load(ID, var.type);
+        LLVMGenerator.load("%" + ID, var.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
 
-@Override
-    public void exitAddSub(LangXParser.AddSubContext ctx) {
-        Value v2 = stack.pop();
-        Value v1 = stack.pop();
-        String op = ctx.op.getText();
-        
+    private void handleMathOperation(Value v1, Value v2, String op, int line) {
         if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
             LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
@@ -218,15 +207,33 @@ public class LLVMActions extends LangXBaseListener {
             Value str1 = stringify(v1);
             Value str2 = stringify(v2);
             if (str1 == null || str2 == null) {
-                System.err.println("Semantic error: Cannot combine " + v1.type + " and " + v2.type + ".");
+                System.err.println("Semantic error (line " + line + "): Cannot combine " + v1.type + " and " + v2.type + ".");
                 System.exit(1);
             }
             String res = LLVMGenerator.add_string(str1.name, str1.length, str2.name, str2.length);
             stack.push(new Value(res, "Eternal", str1.length + str2.length));
         } else {
-            System.err.println("Semantic error: Operator " + op + " not supported for types " + v1.type + " and " + v2.type + ".");
+            System.err.println("Semantic error (line " + line + "): Operator " + op + " not supported for types " + v1.type + " and " + v2.type + ".");
             System.exit(1);
         }
+    }
+
+    @Override
+    public void exitAddSub(LangXParser.AddSubContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+        String op = ctx.op.getText();
+
+        handleMathOperation(v1, v2, op, ctx.getStart().getLine());   
+    }
+
+    @Override
+    public void exitMulDiv(LangXParser.MulDivContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+        String op = ctx.op.getText();
+        
+        handleMathOperation(v1, v2, op, ctx.getStart().getLine());
     }
 
     private Value stringify(Value v) {
@@ -247,34 +254,6 @@ public class LLVMActions extends LangXBaseListener {
         return null;
     }
 
-    @Override
-    public void exitMulDiv(LangXParser.MulDivContext ctx) {
-        Value v2 = stack.pop();
-        Value v1 = stack.pop();
-        String op = ctx.op.getText();
-        
-        if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
-            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
-        } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
-            LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
-            LLVMGenerator.arithmetic(op, v1.name, v2.name, "SmallDivine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
-        } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
-            String extendedV1 = LLVMGenerator.float_to_double(v1.name);
-            LLVMGenerator.arithmetic(op, extendedV1, v2.name, "Divine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
-            String extendedV2 = LLVMGenerator.float_to_double(v2.name);
-            LLVMGenerator.arithmetic(op, v1.name, extendedV2, "Divine");
-            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
-        } else {
-            System.err.println("Semantic error: Cannot multiply/divide " + v1.type + " and " + v2.type + ".");
-            System.exit(1);
-        }
-    }
 
     @Override
     public void exitAndOp(LangXParser.AndOpContext ctx) {
@@ -416,7 +395,7 @@ public class LLVMActions extends LangXBaseListener {
         }
         checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
         String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
-        LLVMGenerator.loadArrayElement(address, arr.type);
+        LLVMGenerator.load(address, arr.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), arr.type, 0));
     }
 
@@ -439,21 +418,10 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
-        String finalValueReg = val.name;
-        if (!arr.type.equals(val.type)) {
-            if (arr.type.equals("SmallDivine") && val.type.equals("Divine")) {
-                finalValueReg = LLVMGenerator.double_to_float(val.name);
-            } else if (arr.type.equals("Divine") && val.type.equals("SmallDivine")) {
-                finalValueReg = LLVMGenerator.float_to_double(val.name);
-            } else if (arr.type.equals("Dogma") && val.type.equals("Mortal")) {
-                finalValueReg = mortal_to_dogma(val, ctx.getStart().getLine());
-            } else {
-                System.err.println("Semantic error: Cannot assign " + val.type + " to array of " + arr.type + ".");
-                System.exit(1);
-            }
-        }
+        String finalValueReg = getCastedValueReg(arr.type, val, ctx.getStart().getLine());
+       
         String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
-        LLVMGenerator.assignArrayElement(address, finalValueReg, arr.type);
+        LLVMGenerator.assign(address, finalValueReg, arr.type);
     }
 
     @Override
@@ -467,7 +435,7 @@ public class LLVMActions extends LangXBaseListener {
         if (val.isArray) {
             LLVMGenerator.printArray(ID, val.type, val.arraySize);
         } else {
-            LLVMGenerator.load(ID, val.type);
+            LLVMGenerator.load("%" + ID, val.type);
             LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), val.type);
         }
     }
