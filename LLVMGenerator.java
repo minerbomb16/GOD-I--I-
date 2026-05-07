@@ -22,14 +22,14 @@ class LLVMGenerator {
       main_text += "    %" + id + " = alloca " + llvmType + "\n";
    }
 
-   static void assign(String id, String valueReg, String type) {
+   static void assign(String address, String valueReg, String type) {
       String llvmType = llvmType(type);
-      main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* %" + id + "\n";
+      main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* " + address + "\n";
    }
 
-   static void load(String id, String type) {
+   static void load(String address, String type) {
       String llvmType = llvmType(type);
-      main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* %" + id + "\n";
+      main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* " + address + "\n";
       reg++;
    }
 
@@ -53,16 +53,6 @@ class LLVMGenerator {
       return address;
    }
 
-   static void assignArrayElement(String address, String valueReg, String type) {
-      String llvmType = llvmType(type);
-      main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* " + address + "\n";
-   }
-
-   static void loadArrayElement(String address, String type) {
-      String llvmType = llvmType(type);
-      main_text += "    %" + reg + " = load " + llvmType + ", " + llvmType + "* " + address + "\n";
-      reg++;
-   }
    static void arithmetic(String op, String val1, String val2, String type) {
       String llvmType = llvmType(type);
 
@@ -207,76 +197,45 @@ class LLVMGenerator {
       reg++;
    }
 
-   static void printArray(String id, String type, int size) {
-      for (int i = 0; i < size; i++) {
+   static void printArrayRange(String id, String type, int size, int start, int end) {
+      for (int i = start; i <= end; i++) {
          String address = getArrayElementAddress(id, type, size, Integer.toString(i));
-         loadArrayElement(address, type);
+         load(address, type);
 
          String valueReg = "%" + (reg - 1);
          print(valueReg, type);
-      }
+         }
    }
 
-   static void printArrayRange(String id, String type, int size, int start, int end) {
-   for (int i = start; i <= end; i++) {
-      String address = getArrayElementAddress(id, type, size, Integer.toString(i));
-      loadArrayElement(address, type);
-
-      String valueReg = "%" + (reg - 1);
-      print(valueReg, type);
-      }
+   static void printArray(String id, String type, int size) {
+      printArrayRange(id, type, size, 0, size - 1);
    }
 
-   static void readArrayElement(String address, String type) {
+
+   static void read(String pointer, String type, int length) {
       if (type.equals("Mortal")) {
-         main_text += "    call void @readInt(i32* " + address + ")\n";
+         main_text += "    call void @readInt(i32* " + pointer + ")\n";
       } else if (type.equals("Divine")) {
-         main_text += "    call void @readReal(double* " + address + ")\n";
+         main_text += "    call void @readReal(double* " + pointer + ")\n";
       } else if (type.equals("SmallDivine")) {
-         main_text += "    call void @readFloat(float* " + address + ")\n";
-      } else if (type.equals("Dogma")) {
-         readDogmaToAddress(address);
-      }
-   }
-
-   static void readDogma(String id) {
-      main_text += "    %" + reg + " = call i32 @readDogma()\n";
-      String intReg = "%" + reg;
-      reg++;
-      main_text += "    %" + reg + " = icmp ne i32 " + intReg + ", 0\n";
-      String boolReg = "%" + reg;
-      reg++;
-      main_text += "    store i1 " + boolReg + ", i1* %" + id + "\n";
-   }
-
-   static void read(String id, String type, int length) {
-      if (type.equals("Mortal")) {
-         main_text += "    call void @readInt(i32* %" + id + ")\n";
-      } else if (type.equals("Divine")) {
-         main_text += "    call void @readReal(double* %" + id + ")\n";
-      } else if (type.equals("SmallDivine")) {
-         main_text += "    call void @readFloat(float* %" + id + ")\n";
+         main_text += "    call void @readFloat(float* " + pointer + ")\n";
       } else if (type.equals("Eternal")) {
          allocate_string("str" + str, length);
          main_text += "    %" + reg + " = getelementptr inbounds [" + (length + 1) + " x i8], [" + (length + 1) + " x i8]* %str" + str + ", i32 0, i32 0\n";
          String buffPtr = "%" + reg;
          reg++;
-         main_text += "    store i8* " + buffPtr + ", i8** %" + id + "\n"; 
+         main_text += "    store i8* " + buffPtr + ", i8** " + pointer + "\n"; 
          str++;
          main_text += "    call void @readString(i8* " + buffPtr + ")\n";
       } else if (type.equals("Dogma")) {
-         readDogma(id);
+         main_text += "    %" + reg + " = call i32 @readDogma()\n";
+         String intReg = "%" + reg;
+         reg++;
+         main_text += "    %" + reg + " = icmp ne i32 " + intReg + ", 0\n";
+         String boolReg = "%" + reg;
+         reg++;
+         main_text += "    store i1 " + boolReg + ", i1* " + pointer + "\n";
       }
-   }
-
-    static void readDogmaToAddress(String address) {
-      main_text += "    %" + reg + " = call i32 @readDogma()\n";
-      String intReg = "%" + reg;
-      reg++;
-      main_text += "    %" + reg + " = icmp ne i32 " + intReg + ", 0\n";
-      String boolReg = "%" + reg;
-      reg++;
-      main_text += "    store i1 " + boolReg + ", i1* " + address + "\n";
    }
 
    static void unaryMinus(String val, String type) {
@@ -378,7 +337,7 @@ class LLVMGenerator {
       for (int i = 0; i < rows; i++) {
          for (int j = 0; j < cols; j++) {
             String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(j));
-            loadArrayElement(address, type);
+            load(address, type);
             String valueReg = "%" + (reg - 1);
             print(valueReg, type);
          }
@@ -388,7 +347,7 @@ class LLVMGenerator {
    static void printMatrixRow(String id, String type, int rows, int cols, int row) {
       for (int j = 0; j < cols; j++) {
          String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(row), Integer.toString(j));
-         loadArrayElement(address, type);
+         load(address, type);
          String valueReg = "%" + (reg - 1);
          print(valueReg, type);
       }
@@ -397,7 +356,7 @@ class LLVMGenerator {
    static void printMatrixColumn(String id, String type, int rows, int cols, int col) {
       for (int i = 0; i < rows; i++) {
          String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(col));
-         loadArrayElement(address, type);
+         load(address, type);
          String valueReg = "%" + (reg - 1);
          print(valueReg, type);
       }
