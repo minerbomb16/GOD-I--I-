@@ -50,6 +50,11 @@ public class LLVMActions extends LangXBaseListener {
     HashMap<String, Value> variables = new HashMap<>(); 
     Stack<Value> stack = new Stack<>();
     Stack<Integer> brStack = new Stack<>();
+    Stack<Integer> ifStack = new Stack<>();
+    Stack<Integer> whileStack = new Stack<>();
+    Stack<Integer> forStack = new Stack<>();
+    Stack<String> forVarStack = new Stack<>();
+    Stack<String> forStepStack = new Stack<>();
     
     static int BUFFER_SIZE = 256; 
 
@@ -292,6 +297,132 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     @Override
+    public void exitIfCond(LangXParser.IfCondContext ctx) {
+        Value cond = stack.pop();
+        if (!cond.type.equals("Dogma")) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Condition must be a Dogma.");
+            System.exit(1);
+        }
+        int b = LLVMGenerator.br++;
+        ifStack.push(b);
+        LLVMGenerator.ifStart(cond.name, b);
+    }
+
+    @Override
+    public void enterElseBlock(LangXParser.ElseBlockContext ctx) {
+        int b = ifStack.peek();
+        LLVMGenerator.elseStart(b);
+    }
+
+    @Override
+    public void exitIfStatement(LangXParser.IfStatementContext ctx) {
+        int b = ifStack.pop();
+        boolean hasElse = ctx.elseBlock() != null;
+        LLVMGenerator.ifEnd(b, hasElse);
+    }
+
+    @Override
+    public void exitWhileKeyword(LangXParser.WhileKeywordContext ctx) {
+        int b = LLVMGenerator.br++;
+        whileStack.push(b);
+        LLVMGenerator.whileStart(b);
+    }
+
+    @Override
+    public void exitWhileCond(LangXParser.WhileCondContext ctx) {
+        Value cond = stack.pop();
+        if (!cond.type.equals("Dogma")) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Pray condition must be a Dogma.");
+            System.exit(1);
+        }
+        int b = whileStack.peek();
+        LLVMGenerator.whileCond(cond.name, b);
+    }
+
+    @Override
+    public void exitWhileStatement(LangXParser.WhileStatementContext ctx) {
+        int b = whileStack.pop();
+        LLVMGenerator.whileEnd(b);
+    }
+
+    @Override
+    public void exitForStartExpr(LangXParser.ForStartExprContext ctx) {
+        String id = ctx.ID().getText();
+        if (!variables.containsKey(id)) {
+            System.err.println("Semantic error: Variable " + id + " must be Created before Pilgrimage.");
+            System.exit(1);
+        }
+        Value var = variables.get(id);
+        if (!var.type.equals("Mortal")) {
+            System.err.println("Semantic error: Pilgrimage variable must be of type Mortal.");
+            System.exit(1);
+        }
+        
+        Value startVal = stack.pop();
+        if (!startVal.type.equals("Mortal")) {
+            System.err.println("Semantic error: Pilgrimage start value must be Mortal.");
+            System.exit(1);
+        }
+
+        // Przypisanie wartości początkowej do zmiennej iteracyjnej
+        LLVMGenerator.assign("%" + id, startVal.name, "Mortal");
+
+        // Otwieramy blok warunku
+        int b = LLVMGenerator.br++;
+        forStack.push(b);
+        forVarStack.push(id);
+        
+        LLVMGenerator.forCondStart(b);
+    }
+
+    @Override
+    public void exitForTo(LangXParser.ForToContext ctx) {
+        Value endVal = stack.pop();
+        if (!endVal.type.equals("Mortal")) {
+            System.err.println("Semantic error: Pilgrimage end value must be Mortal.");
+            System.exit(1);
+        }
+
+        int b = forStack.peek();
+        String id = forVarStack.peek();
+        String stepReg = "1";
+        forStepStack.push(stepReg);
+        
+        LLVMGenerator.forCond(id, endVal.name, stepReg, b);
+    }
+
+    @Override
+    public void exitForToStep(LangXParser.ForToStepContext ctx) {
+        Value stepVal = stack.pop();
+        if (!stepVal.type.equals("Mortal")) {
+            System.err.println("Semantic error: Pilgrimage step value must be Mortal.");
+            System.exit(1);
+        }
+        
+        Value endVal = stack.pop();
+        if (!endVal.type.equals("Mortal")) {
+            System.err.println("Semantic error: Pilgrimage end value must be Mortal.");
+            System.exit(1);
+        }
+
+        int b = forStack.peek();
+        String id = forVarStack.peek();
+        String stepReg = stepVal.name;
+        forStepStack.push(stepReg);
+        
+        LLVMGenerator.forCond(id, endVal.name, stepReg, b);
+    }
+
+    @Override
+    public void exitForStatement(LangXParser.ForStatementContext ctx) {
+        int b = forStack.pop();
+        String id = forVarStack.pop();
+        String stepReg = forStepStack.pop();
+        
+        LLVMGenerator.forInc(id, stepReg, b);
+    }
+
+    @Override
     public void exitUnaryMinus(LangXParser.UnaryMinusContext ctx) {
         Value v = stack.pop();
         if (!v.type.equals("Mortal") && !v.type.equals("Divine") && !v.type.equals("SmallDivine")) {
@@ -316,6 +447,33 @@ public class LLVMActions extends LangXBaseListener {
         }
 
         LLVMGenerator.logicNeg(v.name);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
+    }
+
+    @Override
+    public void exitRelOp(LangXParser.RelOpContext ctx) {
+        Value v2 = stack.pop();
+        Value v1 = stack.pop();
+        String op = ctx.op.getText();
+
+        if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
+            LLVMGenerator.compare(op, v1.name, v2.name, "Mortal");
+        } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
+            LLVMGenerator.compare(op, v1.name, v2.name, "Divine");
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
+            LLVMGenerator.compare(op, v1.name, v2.name, "SmallDivine");
+        } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
+            // Promocja lewego argumentu ze SmallDivine na Divine
+            String extendedV1 = LLVMGenerator.float_to_double(v1.name);
+            LLVMGenerator.compare(op, extendedV1, v2.name, "Divine");
+        } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
+            String extendedV2 = LLVMGenerator.float_to_double(v2.name);
+            LLVMGenerator.compare(op, v1.name, extendedV2, "Divine");
+        } else {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot compare " + v1.type + " and " + v2.type + ".");
+            System.exit(1);
+        }
+        
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Dogma", 0));
     }
 

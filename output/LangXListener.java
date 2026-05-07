@@ -221,6 +221,146 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitRead(LangXParser.ReadContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code ifStmtNode}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterIfStmtNode(LangXParser.IfStmtNodeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ifStmtNode}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitIfStmtNode(LangXParser.IfStmtNodeContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code whileStmtNode}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileStmtNode(LangXParser.WhileStmtNodeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code whileStmtNode}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileStmtNode(LangXParser.WhileStmtNodeContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code forStmtNode}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterForStmtNode(LangXParser.ForStmtNodeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code forStmtNode}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitForStmtNode(LangXParser.ForStmtNodeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#ifStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterIfStatement(LangXParser.IfStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#ifStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitIfStatement(LangXParser.IfStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#ifCond}.
+	 * @param ctx the parse tree
+	 */
+	void enterIfCond(LangXParser.IfCondContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#ifCond}.
+	 * @param ctx the parse tree
+	 */
+	void exitIfCond(LangXParser.IfCondContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#elseBlock}.
+	 * @param ctx the parse tree
+	 */
+	void enterElseBlock(LangXParser.ElseBlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#elseBlock}.
+	 * @param ctx the parse tree
+	 */
+	void exitElseBlock(LangXParser.ElseBlockContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileStatement(LangXParser.WhileStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileStatement(LangXParser.WhileStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#whileCond}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileCond(LangXParser.WhileCondContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#whileCond}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileCond(LangXParser.WhileCondContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#whileKeyword}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileKeyword(LangXParser.WhileKeywordContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#whileKeyword}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileKeyword(LangXParser.WhileKeywordContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#forStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterForStatement(LangXParser.ForStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#forStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitForStatement(LangXParser.ForStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code forTo}
+	 * labeled alternative in {@link LangXParser#forInitCond}.
+	 * @param ctx the parse tree
+	 */
+	void enterForTo(LangXParser.ForToContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code forTo}
+	 * labeled alternative in {@link LangXParser#forInitCond}.
+	 * @param ctx the parse tree
+	 */
+	void exitForTo(LangXParser.ForToContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code forToStep}
+	 * labeled alternative in {@link LangXParser#forInitCond}.
+	 * @param ctx the parse tree
+	 */
+	void enterForToStep(LangXParser.ForToStepContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code forToStep}
+	 * labeled alternative in {@link LangXParser#forInitCond}.
+	 * @param ctx the parse tree
+	 */
+	void exitForToStep(LangXParser.ForToStepContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#forStartExpr}.
+	 * @param ctx the parse tree
+	 */
+	void enterForStartExpr(LangXParser.ForStartExprContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#forStartExpr}.
+	 * @param ctx the parse tree
+	 */
+	void exitForStartExpr(LangXParser.ForStartExprContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link LangXParser#type}.
 	 * @param ctx the parse tree
 	 */
@@ -314,6 +454,18 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIntConst(LangXParser.IntConstContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code relOp}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterRelOp(LangXParser.RelOpContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code relOp}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitRelOp(LangXParser.RelOpContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code mulDiv}
 	 * labeled alternative in {@link LangXParser#expr}.
