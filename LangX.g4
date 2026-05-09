@@ -1,7 +1,6 @@
 grammar LangX;
 
-prog: start+ EOF 
-    ;
+prog: (functionDecl | start)+ EOF ; 
 
 start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                       #declareMatrix
     | ID '[' expr ']' '[' expr ']' 'be transformed into' expr ';'         #assignMatrixElem
@@ -23,7 +22,14 @@ start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                       #decla
     | ID 'be transformed into' expr ';'                 #assign
     | 'Reveal' expr ';'                                 #write
     | 'Confess' ID ';'                                  #read
+    | ID '(' argList? ')'                               #functionCallStat
+    | 'Fulfill' expr ';'                                #returnStat
     ;
+
+functionDecl: 'Miracle' type ID '(' paramList? ')' '{' start* '}' ;
+paramList: type ID (',' type ID)* ;
+
+argList: expr (',' expr)* ;
 
 type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' | 'Dogma';
 
@@ -42,6 +48,7 @@ expr: '-' expr                  #unaryMinus
     | REAL                      #realConst
     | STRING                    #stringConst
     | ID                        #var
+    | ID '(' argList? ')'       #functionCallExpr
     | '(' expr ')'              #parens
     ;
 
