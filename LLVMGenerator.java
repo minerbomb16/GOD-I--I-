@@ -4,6 +4,8 @@ class LLVMGenerator {
    static int reg = 1;
    static int str = 1;
    static int br = 1;
+   static String functions_text = "";
+   static String main_buffer = "";
 
    static String llvmType(String type) {
       if (type.equals("Mortal")) return "i32";
@@ -22,6 +24,39 @@ class LLVMGenerator {
       main_text += "    %" + id + " = alloca " + llvmType + "\n";
    }
 
+   static void declareGlobal(String id, String type) {
+      String llvmType = llvmType(type);
+      String init = type.equals("Mortal") ? "0" : type.equals("Dogma") ? "false" : type.equals("Eternal") ? "null" : "0.0";
+      header_text += "@" + id + " = global " + llvmType + " " + init + "\n";
+   }
+
+   static void declareArray(String id, String type, int size) {
+      String llvmType = llvmType(type);
+      String arrayType = "[" + size + " x " + llvmType + "]";
+      main_text += "    %" + id + " = alloca " + arrayType + "\n";
+      main_text += "    store " + arrayType + " zeroinitializer, " + arrayType + "* %" + id + "\n";
+   }
+
+   static void declareGlobalArray(String id, String type, int size) {
+      String llvmType = llvmType(type);
+      String arrayType = "[" + size + " x " + llvmType + "]";
+      header_text += "@" + id + " = global " + arrayType + " zeroinitializer\n";
+   }
+
+   static void declareMatrix(String id, String type, int rows, int cols) {
+      String llvmType = llvmType(type);
+      String matrixType = "[" + rows + " x [" + cols + " x " + llvmType + "]]";
+
+      main_text += "    %" + id + " = alloca " + matrixType + "\n";
+      main_text += "    store " + matrixType + " zeroinitializer, " + matrixType + "* %" + id + "\n";
+   }
+
+   static void declareGlobalMatrix(String id, String type, int rows, int cols) {
+      String llvmType = llvmType(type);
+      String matrixType = "[" + rows + " x [" + cols + " x " + llvmType + "]]";
+      header_text += "@" + id + " = global " + matrixType + " zeroinitializer\n";
+   }
+
    static void assign(String address, String valueReg, String type) {
       String llvmType = llvmType(type);
       main_text += "    store " + llvmType + " " + valueReg + ", " + llvmType + "* " + address + "\n";
@@ -33,24 +68,68 @@ class LLVMGenerator {
       reg++;
    }
 
-   static void declareArray(String id, String type, int size) {
-      String llvmType = llvmType(type);
-      String arrayType = "[" + size + " x " + llvmType + "]";
-      main_text += "    %" + id + " = alloca " + arrayType + "\n";
-      main_text += "    store " + arrayType + " zeroinitializer, " + arrayType + "* %" + id + "\n";
-   }
 
    static String getArrayElementAddress(String id, String type, int size, String indexReg) {
       String llvmType = llvmType(type);
 
-      main_text += "    %" + reg + " = getelementptr inbounds ["
-            + size + " x " + llvmType + "], ["
-            + size + " x " + llvmType + "]* %" + id
-            + ", i32 0, i32 " + indexReg + "\n";
+      main_text += "    %" + reg + " = getelementptr inbounds ["+ size + " x " + llvmType + "], ["+ size + " x " + llvmType + "]* " + id+ ", i32 0, i32 " + indexReg + "\n";
 
       String address = "%" + reg;
       reg++;
       return address;
+   }
+
+   static String getMatrixElementAddress(String id, String type, int rows, int cols, String rowReg, String colReg) {
+      String llvmType = llvmType(type);
+      main_text += "    %" + reg + " = getelementptr inbounds [" + rows + " x [" + cols + " x " + llvmType + "]], [" + rows + " x [" + cols + " x " + llvmType + "]]* " + id + ", i32 0, i32 " + rowReg + ", i32 " + colReg + "\n";
+      String address = "%" + reg;
+      reg++;
+      return address;
+   }
+
+   static void startFunction(String id, String type, java.util.List<String> argNames, java.util.List<String> argTypes) {
+      main_buffer = main_text; 
+      main_text = ""; 
+        
+      String llvmType = llvmType(type);
+      StringBuilder args = new StringBuilder();
+      for(int i=0; i<argNames.size(); i++) {
+          if(i > 0) args.append(", ");
+          args.append(llvmType(argTypes.get(i))).append(" %").append(argNames.get(i)).append("_arg");
+      }
+        
+      main_text += "define " + llvmType + " @" + id + "(" + args.toString() + ") {\n";
+        
+      for(int i=0; i<argNames.size(); i++) {
+          String originalType = argTypes.get(i); 
+          String cleanName = argNames.get(i);   
+          
+          declare(cleanName, originalType);
+          assign("%" + cleanName, "%" + cleanName + "_arg", originalType);
+      }
+   }
+
+   static void endFunction() {
+      main_text += "}\n\n";
+      functions_text += main_text; 
+      main_text = main_buffer;     
+   }
+
+   static void fulfill(String valueReg, String type) {
+      main_text += "    ret " + llvmType(type) + " " + valueReg + "\n";
+   }
+    
+   static String callFunction(String id, String type, java.util.List<String> argRegs, java.util.List<String> argTypes) {
+      String llvmType = llvmType(type);
+      StringBuilder args = new StringBuilder();
+      for(int i=0; i<argRegs.size(); i++) {
+          if(i > 0) args.append(", ");
+          args.append(llvmType(argTypes.get(i))).append(" ").append(argRegs.get(i));
+      }
+      main_text += "    %" + reg + " = call " + llvmType + " @" + id + "(" + args.toString() + ")\n";
+      String retReg = "%" + reg;
+      reg++;
+      return retReg;
    }
 
    static void arithmetic(String op, String val1, String val2, String type) {
@@ -151,6 +230,20 @@ class LLVMGenerator {
       return newReg;
    }
 
+   static String mortal_to_divine(String valReg) {
+      main_text += "    %" + reg + " = sitofp i32 " + valReg + " to double\n";
+      String newReg = "%" + reg;
+      reg++;
+      return newReg;
+   }
+
+   static String mortal_to_small_divine(String valReg) {
+      main_text += "    %" + reg + " = sitofp i32 " + valReg + " to float\n";
+      String newReg = "%" + reg;
+      reg++;
+      return newReg;
+   }
+
    static String float_to_string(String in, int lout) {
       allocate_string("str" + str, lout);
       main_text += "    %" + reg + " = getelementptr inbounds [" + (lout + 1) + " x i8], [" + (lout + 1) + " x i8]* %str" + str + ", i32 0, i32 0\n";
@@ -211,6 +304,34 @@ class LLVMGenerator {
       printArrayRange(id, type, size, 0, size - 1);
    }
 
+      static void printMatrix(String id, String type, int rows, int cols) {
+      for (int i = 0; i < rows; i++) {
+         for (int j = 0; j < cols; j++) {
+            String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(j));
+            load(address, type);
+            String valueReg = "%" + (reg - 1);
+            print(valueReg, type);
+         }
+      }
+   }
+
+   static void printMatrixRow(String id, String type, int rows, int cols, int row) {
+      for (int j = 0; j < cols; j++) {
+         String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(row), Integer.toString(j));
+         load(address, type);
+         String valueReg = "%" + (reg - 1);
+         print(valueReg, type);
+      }
+   }
+
+   static void printMatrixColumn(String id, String type, int rows, int cols, int col) {
+      for (int i = 0; i < rows; i++) {
+         String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(col));
+         load(address, type);
+         String valueReg = "%" + (reg - 1);
+         print(valueReg, type);
+      }
+   }
 
    static void read(String pointer, String type, int length) {
       if (type.equals("Mortal")) {
@@ -412,55 +533,11 @@ class LLVMGenerator {
       text += "@dogma_Hell = constant [5 x i8] c\"Hell\\00\"\n";
 
       text += header_text + "\n";
+      text += functions_text + "\n";
       text += "define i32 @main() {\n";
       text += main_text;
       text += "    ret i32 0\n";
       text += "}\n";
       return text;
-   }
-
-   static void declareMatrix(String id, String type, int rows, int cols) {
-      String llvmType = llvmType(type);
-      String matrixType = "[" + rows + " x [" + cols + " x " + llvmType + "]]";
-
-      main_text += "    %" + id + " = alloca " + matrixType + "\n";
-      main_text += "    store " + matrixType + " zeroinitializer, " + matrixType + "* %" + id + "\n";
-   }
-
-   static String getMatrixElementAddress(String id, String type, int rows, int cols, String rowReg, String colReg) {
-      String llvmType = llvmType(type);
-      main_text += "    %" + reg + " = getelementptr inbounds [" + rows + " x [" + cols + " x " + llvmType + "]], [" + rows + " x [" + cols + " x " + llvmType + "]]* %" + id + ", i32 0, i32 " + rowReg + ", i32 " + colReg + "\n";
-      String address = "%" + reg;
-      reg++;
-      return address;
-   }
-
-   static void printMatrix(String id, String type, int rows, int cols) {
-      for (int i = 0; i < rows; i++) {
-         for (int j = 0; j < cols; j++) {
-            String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(j));
-            load(address, type);
-            String valueReg = "%" + (reg - 1);
-            print(valueReg, type);
-         }
-      }
-   }
-
-   static void printMatrixRow(String id, String type, int rows, int cols, int row) {
-      for (int j = 0; j < cols; j++) {
-         String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(row), Integer.toString(j));
-         load(address, type);
-         String valueReg = "%" + (reg - 1);
-         print(valueReg, type);
-      }
-   }
-
-   static void printMatrixColumn(String id, String type, int rows, int cols, int col) {
-      for (int i = 0; i < rows; i++) {
-         String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(col));
-         load(address, type);
-         String valueReg = "%" + (reg - 1);
-         print(valueReg, type);
-      }
    }
 }

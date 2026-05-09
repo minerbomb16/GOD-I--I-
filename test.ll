@@ -15,308 +15,240 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8* noalias nocapture writeonly, i8* noa
 @strspf = constant [3 x i8] c"%f\00"
 @dogma_Heaven = constant [7 x i8] c"Heaven\00"
 @dogma_Hell = constant [5 x i8] c"Hell\00"
-@str1 = constant [1 x i8] c"\00"
-@str2 = constant [48 x i8] c"========= The Ultimate Trial of Faith =========\00"
-@str3 = constant [52 x i8] c"--- Phase 1: Pilgrimage with Dogma AND Equation ---\00"
-@str4 = constant [16 x i8] c"Current cycle: \00"
-@str7 = constant [47 x i8] c"  [!] Reached cycle 2. Testing deeper faith...\00"
-@str8 = constant [45 x i8] c"    [*] (testVal * 2) > 15. Faith is strong!\00"
-@str9 = constant [23 x i8] c"    [-] Faith wavered.\00"
-@str10 = constant [42 x i8] c"  [!] Reached cycle 4. Faith is fading...\00"
-@str11 = constant [1 x i8] c"\00"
-@str12 = constant [44 x i8] c"--- Phase 2: Pilgrimage with pure Dogma ---\00"
-@str13 = constant [12 x i8] c"Countdown: \00"
-@str16 = constant [47 x i8] c"  [!] Countdown is 0. Exiting pure dogma loop.\00"
-@str17 = constant [25 x i8] c"========= Amen =========\00"
-@str18 = constant [1 x i8] c"\00"
-@str19 = constant [37 x i8] c"========= Way of the Cross =========\00"
-@str20 = constant [31 x i8] c"Way of the Cross by step of 2:\00"
-@str21 = constant [16 x i8] c"  Stepping up: \00"
-@str24 = constant [12 x i8] c"    inner: \00"
-@str27 = constant [1 x i8] c"\00"
-@str28 = constant [43 x i8] c"Way of the Cross downwards into the abyss:\00"
-@str29 = constant [18 x i8] c"  Stepping down: \00"
-@str32 = constant [23 x i8] c"All journeys complete.\00"
+@str1 = constant [43 x i8] c"=== INICJALIZACJA ZMIENNYCH GLOBALNYCH ===\00"
+@mnoznik = global i32 0
+@globalnaTablica = global [3 x i32] zeroinitializer
+@globalnaMacierz = global [2 x [2 x i32]] zeroinitializer
+@str2 = constant [34 x i8] c"=== DEFINICJE CUDOW (FUNKCJI) ===\00"
+@str3 = constant [69 x i8] c"-> [Wnetrze funkcji] Wykonuje magiczna kalkulacje na roznych typach!\00"
+@str4 = constant [55 x i8] c"-> [Wnetrze funkcji] Tworze i drukuje LOKALNA tablice:\00"
+@str5 = constant [55 x i8] c"-> [Wnetrze funkcji] Tworze i drukuje LOKALNA macierz:\00"
+@str6 = constant [94 x i8] c"-> [Wnetrze funkcji] Nadpisuje GLOBALNA tablice uzywajac funkcji pomnoz() i zmiennej mnoznik:\00"
+@str7 = constant [36 x i8] c"=== WYKONANIE G£ÓWNEGO PROGRAMU ===\00"
+@str8 = constant [34 x i8] c"Wynik zwyklej funkcji pomnoz(10):\00"
+@x = global i32 0
+@str9 = constant [54 x i8] c"Wynik funkcji z dwoma roznymi argumentami (10 * 2.5):\00"
+@wynikMagii = global double 0.0
+@str10 = constant [50 x i8] c"Stan GLOBALNEJ tablicy przed wejsciem do funkcji:\00"
+@str11 = constant [25 x i8] c"Stan GLOBALNEJ macierzy:\00"
+@str12 = constant [42 x i8] c"=== WCHODZE DO FUNKCJI testujKolekcje ===\00"
+@smieci = global i32 0
+@str13 = constant [26 x i8] c"=== WYSZLAM Z FUNKCJI ===\00"
+@str14 = constant [56 x i8] c"Stan GLOBALNEJ tablicy po modyfikacji wewnatrz funkcji:\00"
+@str15 = constant [15 x i8] c"=== KONIEC ===\00"
+
+define i32 @pomnoz(i32 %liczba_arg) {
+    %liczba = alloca i32
+    store i32 %liczba_arg, i32* %liczba
+    %14 = load i32, i32* %liczba
+    %15 = load i32, i32* @mnoznik
+    %16 = mul i32 %14, %15
+    %wynik = alloca i32
+    store i32 %16, i32* %wynik
+    %17 = load i32, i32* %wynik
+    ret i32 %17
+}
+
+define double @magicznaKalkulacja(i32 %baza_arg, double %mnoznikRzeczywisty_arg) {
+    %baza = alloca i32
+    store i32 %baza_arg, i32* %baza
+    %mnoznikRzeczywisty = alloca double
+    store double %mnoznikRzeczywisty_arg, double* %mnoznikRzeczywisty
+    %str3 = alloca [69 x i8]
+    %18 = bitcast [69 x i8]* %str3 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %18, i8* align 1 getelementptr inbounds ([69 x i8], [69 x i8]* @str3, i32 0, i32 0), i64 69, i1 false)
+    %19 = getelementptr inbounds [69 x i8], [69 x i8]* %str3, i32 0, i32 0
+    %20 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %19)
+    %21 = load i32, i32* %baza
+    %22 = load double, double* %mnoznikRzeczywisty
+    %23 = sitofp i32 %21 to double
+    %24 = fmul double %23, %22
+    %wynik = alloca double
+    store double %24, double* %wynik
+    %25 = load double, double* %wynik
+    ret double %25
+}
+
+define i32 @testujKolekcje() {
+    %str4 = alloca [55 x i8]
+    %26 = bitcast [55 x i8]* %str4 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %26, i8* align 1 getelementptr inbounds ([55 x i8], [55 x i8]* @str4, i32 0, i32 0), i64 55, i1 false)
+    %27 = getelementptr inbounds [55 x i8], [55 x i8]* %str4, i32 0, i32 0
+    %28 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %27)
+    %lokalnaTablica = alloca [2 x i32]
+    store [2 x i32] zeroinitializer, [2 x i32]* %lokalnaTablica
+    %29 = getelementptr inbounds [2 x i32], [2 x i32]* %lokalnaTablica, i32 0, i32 0
+    store i32 100, i32* %29
+    %30 = getelementptr inbounds [2 x i32], [2 x i32]* %lokalnaTablica, i32 0, i32 1
+    store i32 200, i32* %30
+    %31 = getelementptr inbounds [2 x i32], [2 x i32]* %lokalnaTablica, i32 0, i32 0
+    %32 = load i32, i32* %31
+    %33 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %32)
+    %34 = getelementptr inbounds [2 x i32], [2 x i32]* %lokalnaTablica, i32 0, i32 1
+    %35 = load i32, i32* %34
+    %36 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %35)
+    %str5 = alloca [55 x i8]
+    %37 = bitcast [55 x i8]* %str5 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %37, i8* align 1 getelementptr inbounds ([55 x i8], [55 x i8]* @str5, i32 0, i32 0), i64 55, i1 false)
+    %38 = getelementptr inbounds [55 x i8], [55 x i8]* %str5, i32 0, i32 0
+    %39 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %38)
+    %lokalnaMacierz = alloca [2 x [2 x i32]]
+    store [2 x [2 x i32]] zeroinitializer, [2 x [2 x i32]]* %lokalnaMacierz
+    %40 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 0, i32 0
+    store i32 99, i32* %40
+    %41 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 0, i32 1
+    store i32 88, i32* %41
+    %42 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 1, i32 0
+    store i32 77, i32* %42
+    %43 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 1, i32 1
+    store i32 66, i32* %43
+    %44 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 0, i32 0
+    %45 = load i32, i32* %44
+    %46 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %45)
+    %47 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 0, i32 1
+    %48 = load i32, i32* %47
+    %49 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %48)
+    %50 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 1, i32 0
+    %51 = load i32, i32* %50
+    %52 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %51)
+    %53 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* %lokalnaMacierz, i32 0, i32 1, i32 1
+    %54 = load i32, i32* %53
+    %55 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %54)
+    %str6 = alloca [94 x i8]
+    %56 = bitcast [94 x i8]* %str6 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %56, i8* align 1 getelementptr inbounds ([94 x i8], [94 x i8]* @str6, i32 0, i32 0), i64 94, i1 false)
+    %57 = getelementptr inbounds [94 x i8], [94 x i8]* %str6, i32 0, i32 0
+    %58 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %57)
+    %59 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 0
+    %60 = load i32, i32* %59
+    %61 = call i32 @pomnoz(i32 %60)
+    %62 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 0
+    store i32 %61, i32* %62
+    %63 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 1
+    %64 = load i32, i32* %63
+    %65 = call i32 @pomnoz(i32 %64)
+    %66 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 1
+    store i32 %65, i32* %66
+    %67 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 2
+    %68 = load i32, i32* %67
+    %69 = call i32 @pomnoz(i32 %68)
+    %70 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 2
+    store i32 %69, i32* %70
+    ret i32 1
+}
+
 
 define i32 @main() {
-    %str1 = alloca [1 x i8]
-    %1 = bitcast [1 x i8]* %str1 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %1, i8* align 1 getelementptr inbounds ([1 x i8], [1 x i8]* @str1, i32 0, i32 0), i64 1, i1 false)
-    %2 = getelementptr inbounds [1 x i8], [1 x i8]* %str1, i32 0, i32 0
+    %str1 = alloca [43 x i8]
+    %1 = bitcast [43 x i8]* %str1 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %1, i8* align 1 getelementptr inbounds ([43 x i8], [43 x i8]* @str1, i32 0, i32 0), i64 43, i1 false)
+    %2 = getelementptr inbounds [43 x i8], [43 x i8]* %str1, i32 0, i32 0
     %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %2)
-    %str2 = alloca [48 x i8]
-    %4 = bitcast [48 x i8]* %str2 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %4, i8* align 1 getelementptr inbounds ([48 x i8], [48 x i8]* @str2, i32 0, i32 0), i64 48, i1 false)
-    %5 = getelementptr inbounds [48 x i8], [48 x i8]* %str2, i32 0, i32 0
-    %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %5)
-    %cycle = alloca i32
-    store i32 0, i32* %cycle
-    %isFaithful = alloca i1
-    store i1 true, i1* %isFaithful
-    %str3 = alloca [52 x i8]
-    %7 = bitcast [52 x i8]* %str3 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %7, i8* align 1 getelementptr inbounds ([52 x i8], [52 x i8]* @str3, i32 0, i32 0), i64 52, i1 false)
-    %8 = getelementptr inbounds [52 x i8], [52 x i8]* %str3, i32 0, i32 0
-    %9 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %8)
-    br label %while_cond_1
-while_cond_1:
-    %10 = load i1, i1* %isFaithful
-    br label %and_lhs_end_2
-and_lhs_end_2:
-    br i1 %10, label %and_rhs_2, label %and_end_2
-and_rhs_2:
-    %11 = load i32, i32* %cycle
-    %12 = sub i32 5, %11
-    %13 = icmp sgt i32 %12, 0
-    br label %and_rhs_end_2
-and_rhs_end_2:
-    br label %and_end_2
-and_end_2:
-    %14 = phi i1 [ false, %and_lhs_end_2 ], [ %13, %and_rhs_end_2 ]
-    br i1 %14, label %while_body_1, label %while_end_1
-while_body_1:
-    %str4 = alloca [16 x i8]
-    %15 = bitcast [16 x i8]* %str4 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %15, i8* align 1 getelementptr inbounds ([16 x i8], [16 x i8]* @str4, i32 0, i32 0), i64 16, i1 false)
-    %16 = getelementptr inbounds [16 x i8], [16 x i8]* %str4, i32 0, i32 0
-    %17 = load i32, i32* %cycle
-    %str5 = alloca [17 x i8]
-    %18 = getelementptr inbounds [17 x i8], [17 x i8]* %str5, i32 0, i32 0
-    %19 = call i32 (i8*, i8*, ...) @sprintf(i8* %18, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %17)
-    %str6 = alloca [32 x i8]
-    %20 = getelementptr inbounds [32 x i8], [32 x i8]* %str6, i32 0, i32 0
-    %21 = call i8* @strcpy(i8* %20, i8* %16)
-    %22 = call i8* @strcat(i8* %20, i8* %18)
-    %23 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %20)
-    %24 = load i32, i32* %cycle
-    %25 = icmp eq i32 %24, 2
-    br i1 %25, label %if_true_3, label %if_false_3
-if_true_3:
-    %str7 = alloca [47 x i8]
-    %26 = bitcast [47 x i8]* %str7 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %26, i8* align 1 getelementptr inbounds ([47 x i8], [47 x i8]* @str7, i32 0, i32 0), i64 47, i1 false)
-    %27 = getelementptr inbounds [47 x i8], [47 x i8]* %str7, i32 0, i32 0
-    %28 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %27)
-    %testVal = alloca i32
-    store i32 10, i32* %testVal
-    %29 = load i32, i32* %testVal
-    %30 = mul i32 %29, 2
-    %31 = icmp sgt i32 %30, 15
-    br i1 %31, label %if_true_4, label %if_false_4
-if_true_4:
-    %str8 = alloca [45 x i8]
-    %32 = bitcast [45 x i8]* %str8 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %32, i8* align 1 getelementptr inbounds ([45 x i8], [45 x i8]* @str8, i32 0, i32 0), i64 45, i1 false)
-    %33 = getelementptr inbounds [45 x i8], [45 x i8]* %str8, i32 0, i32 0
-    %34 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %33)
-    br label %if_end_4
-if_false_4:
-    %str9 = alloca [23 x i8]
-    %35 = bitcast [23 x i8]* %str9 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %35, i8* align 1 getelementptr inbounds ([23 x i8], [23 x i8]* @str9, i32 0, i32 0), i64 23, i1 false)
-    %36 = getelementptr inbounds [23 x i8], [23 x i8]* %str9, i32 0, i32 0
-    %37 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %36)
-    br label %if_end_4
-if_end_4:
-    br label %if_end_3
-if_false_3:
-    %38 = load i32, i32* %cycle
-    %39 = icmp eq i32 %38, 4
-    br i1 %39, label %if_true_5, label %if_false_5
-if_true_5:
-    %str10 = alloca [42 x i8]
-    %40 = bitcast [42 x i8]* %str10 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %40, i8* align 1 getelementptr inbounds ([42 x i8], [42 x i8]* @str10, i32 0, i32 0), i64 42, i1 false)
-    %41 = getelementptr inbounds [42 x i8], [42 x i8]* %str10, i32 0, i32 0
-    %42 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %41)
-    store i1 false, i1* %isFaithful
-    br label %if_end_5
-if_false_5:
-    br label %if_end_5
-if_end_5:
-    br label %if_end_3
-if_end_3:
-    %43 = load i32, i32* %cycle
-    %44 = add i32 %43, 1
-    store i32 %44, i32* %cycle
-    br label %while_cond_1
-while_end_1:
-    %str11 = alloca [1 x i8]
-    %45 = bitcast [1 x i8]* %str11 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %45, i8* align 1 getelementptr inbounds ([1 x i8], [1 x i8]* @str11, i32 0, i32 0), i64 1, i1 false)
-    %46 = getelementptr inbounds [1 x i8], [1 x i8]* %str11, i32 0, i32 0
-    %47 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %46)
-    %str12 = alloca [44 x i8]
-    %48 = bitcast [44 x i8]* %str12 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %48, i8* align 1 getelementptr inbounds ([44 x i8], [44 x i8]* @str12, i32 0, i32 0), i64 44, i1 false)
-    %49 = getelementptr inbounds [44 x i8], [44 x i8]* %str12, i32 0, i32 0
-    %50 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %49)
-    %pureDogma = alloca i1
-    store i1 true, i1* %pureDogma
-    %countdown = alloca i32
-    store i32 3, i32* %countdown
-    br label %while_cond_6
-while_cond_6:
-    %51 = load i1, i1* %pureDogma
-    br i1 %51, label %while_body_6, label %while_end_6
-while_body_6:
-    %str13 = alloca [12 x i8]
-    %52 = bitcast [12 x i8]* %str13 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %52, i8* align 1 getelementptr inbounds ([12 x i8], [12 x i8]* @str13, i32 0, i32 0), i64 12, i1 false)
-    %53 = getelementptr inbounds [12 x i8], [12 x i8]* %str13, i32 0, i32 0
-    %54 = load i32, i32* %countdown
-    %str14 = alloca [17 x i8]
-    %55 = getelementptr inbounds [17 x i8], [17 x i8]* %str14, i32 0, i32 0
-    %56 = call i32 (i8*, i8*, ...) @sprintf(i8* %55, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %54)
-    %str15 = alloca [28 x i8]
-    %57 = getelementptr inbounds [28 x i8], [28 x i8]* %str15, i32 0, i32 0
-    %58 = call i8* @strcpy(i8* %57, i8* %53)
-    %59 = call i8* @strcat(i8* %57, i8* %55)
-    %60 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %57)
-    %61 = load i32, i32* %countdown
-    %62 = icmp sle i32 %61, 0
-    br i1 %62, label %if_true_7, label %if_false_7
-if_true_7:
-    %str16 = alloca [47 x i8]
-    %63 = bitcast [47 x i8]* %str16 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %63, i8* align 1 getelementptr inbounds ([47 x i8], [47 x i8]* @str16, i32 0, i32 0), i64 47, i1 false)
-    %64 = getelementptr inbounds [47 x i8], [47 x i8]* %str16, i32 0, i32 0
-    %65 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %64)
-    store i1 false, i1* %pureDogma
-    br label %if_end_7
-if_false_7:
-    br label %if_end_7
-if_end_7:
-    %66 = load i32, i32* %countdown
-    %67 = sub i32 %66, 1
-    store i32 %67, i32* %countdown
-    br label %while_cond_6
-while_end_6:
-    %str17 = alloca [25 x i8]
-    %68 = bitcast [25 x i8]* %str17 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %68, i8* align 1 getelementptr inbounds ([25 x i8], [25 x i8]* @str17, i32 0, i32 0), i64 25, i1 false)
-    %69 = getelementptr inbounds [25 x i8], [25 x i8]* %str17, i32 0, i32 0
-    %70 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %69)
-    %str18 = alloca [1 x i8]
-    %71 = bitcast [1 x i8]* %str18 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %71, i8* align 1 getelementptr inbounds ([1 x i8], [1 x i8]* @str18, i32 0, i32 0), i64 1, i1 false)
-    %72 = getelementptr inbounds [1 x i8], [1 x i8]* %str18, i32 0, i32 0
+    store i32 5, i32* @mnoznik
+    %4 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 0
+    store i32 1, i32* %4
+    %5 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 1
+    store i32 2, i32* %5
+    %6 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 2
+    store i32 3, i32* %6
+    %7 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 0, i32 0
+    store i32 10, i32* %7
+    %8 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 0, i32 1
+    store i32 20, i32* %8
+    %9 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 1, i32 0
+    store i32 30, i32* %9
+    %10 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 1, i32 1
+    store i32 40, i32* %10
+    %str2 = alloca [34 x i8]
+    %11 = bitcast [34 x i8]* %str2 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %11, i8* align 1 getelementptr inbounds ([34 x i8], [34 x i8]* @str2, i32 0, i32 0), i64 34, i1 false)
+    %12 = getelementptr inbounds [34 x i8], [34 x i8]* %str2, i32 0, i32 0
+    %13 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %12)
+    %str7 = alloca [36 x i8]
+    %71 = bitcast [36 x i8]* %str7 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %71, i8* align 1 getelementptr inbounds ([36 x i8], [36 x i8]* @str7, i32 0, i32 0), i64 36, i1 false)
+    %72 = getelementptr inbounds [36 x i8], [36 x i8]* %str7, i32 0, i32 0
     %73 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %72)
-    %str19 = alloca [37 x i8]
-    %74 = bitcast [37 x i8]* %str19 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %74, i8* align 1 getelementptr inbounds ([37 x i8], [37 x i8]* @str19, i32 0, i32 0), i64 37, i1 false)
-    %75 = getelementptr inbounds [37 x i8], [37 x i8]* %str19, i32 0, i32 0
+    %str8 = alloca [34 x i8]
+    %74 = bitcast [34 x i8]* %str8 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %74, i8* align 1 getelementptr inbounds ([34 x i8], [34 x i8]* @str8, i32 0, i32 0), i64 34, i1 false)
+    %75 = getelementptr inbounds [34 x i8], [34 x i8]* %str8, i32 0, i32 0
     %76 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %75)
-    %stepValue = alloca i32
-    store i32 2, i32* %stepValue
-    %iterator = alloca i32
-    %str20 = alloca [31 x i8]
-    %77 = bitcast [31 x i8]* %str20 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %77, i8* align 1 getelementptr inbounds ([31 x i8], [31 x i8]* @str20, i32 0, i32 0), i64 31, i1 false)
-    %78 = getelementptr inbounds [31 x i8], [31 x i8]* %str20, i32 0, i32 0
-    %79 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %78)
-    store i32 0, i32* %iterator
-    br label %for_cond_8
-for_cond_8:
-    %80 = add i32 3, 3
-    %81 = load i32, i32* %stepValue
-    %82 = load i32, i32* %iterator
-    %83 = icmp sle i32 %82, %80
-    %84 = icmp sge i32 %82, %80
-    %85 = icmp slt i32 %81, 0
-    %86 = select i1 %85, i1 %84, i1 %83
-    br i1 %86, label %for_body_8, label %for_end_8
-for_body_8:
-    %str21 = alloca [16 x i8]
-    %87 = bitcast [16 x i8]* %str21 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %87, i8* align 1 getelementptr inbounds ([16 x i8], [16 x i8]* @str21, i32 0, i32 0), i64 16, i1 false)
-    %88 = getelementptr inbounds [16 x i8], [16 x i8]* %str21, i32 0, i32 0
-    %89 = load i32, i32* %iterator
-    %str22 = alloca [17 x i8]
-    %90 = getelementptr inbounds [17 x i8], [17 x i8]* %str22, i32 0, i32 0
-    %91 = call i32 (i8*, i8*, ...) @sprintf(i8* %90, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %89)
-    %str23 = alloca [32 x i8]
-    %92 = getelementptr inbounds [32 x i8], [32 x i8]* %str23, i32 0, i32 0
-    %93 = call i8* @strcpy(i8* %92, i8* %88)
-    %94 = call i8* @strcat(i8* %92, i8* %90)
-    %95 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %92)
-    %iterator2 = alloca i32
-    store i32 0, i32* %iterator2
-    br label %for_cond_9
-for_cond_9:
-    %96 = load i32, i32* %iterator2
-    %97 = icmp sle i32 %96, 2
-    %98 = icmp sge i32 %96, 2
-    %99 = icmp slt i32 1, 0
-    %100 = select i1 %99, i1 %98, i1 %97
-    br i1 %100, label %for_body_9, label %for_end_9
-for_body_9:
-    %str24 = alloca [12 x i8]
-    %101 = bitcast [12 x i8]* %str24 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %101, i8* align 1 getelementptr inbounds ([12 x i8], [12 x i8]* @str24, i32 0, i32 0), i64 12, i1 false)
-    %102 = getelementptr inbounds [12 x i8], [12 x i8]* %str24, i32 0, i32 0
-    %103 = load i32, i32* %iterator2
-    %str25 = alloca [17 x i8]
-    %104 = getelementptr inbounds [17 x i8], [17 x i8]* %str25, i32 0, i32 0
-    %105 = call i32 (i8*, i8*, ...) @sprintf(i8* %104, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %103)
-    %str26 = alloca [28 x i8]
-    %106 = getelementptr inbounds [28 x i8], [28 x i8]* %str26, i32 0, i32 0
-    %107 = call i8* @strcpy(i8* %106, i8* %102)
-    %108 = call i8* @strcat(i8* %106, i8* %104)
-    %109 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %106)
-    %110 = load i32, i32* %iterator2
-    %111 = add i32 %110, 1
-    store i32 %111, i32* %iterator2
-    br label %for_cond_9
-for_end_9:
-    %112 = load i32, i32* %iterator
-    %113 = add i32 %112, %81
-    store i32 %113, i32* %iterator
-    br label %for_cond_8
-for_end_8:
-    %str27 = alloca [1 x i8]
-    %114 = bitcast [1 x i8]* %str27 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %114, i8* align 1 getelementptr inbounds ([1 x i8], [1 x i8]* @str27, i32 0, i32 0), i64 1, i1 false)
-    %115 = getelementptr inbounds [1 x i8], [1 x i8]* %str27, i32 0, i32 0
-    %116 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %115)
-    %str28 = alloca [43 x i8]
-    %117 = bitcast [43 x i8]* %str28 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %117, i8* align 1 getelementptr inbounds ([43 x i8], [43 x i8]* @str28, i32 0, i32 0), i64 43, i1 false)
-    %118 = getelementptr inbounds [43 x i8], [43 x i8]* %str28, i32 0, i32 0
+    %77 = call i32 @pomnoz(i32 10)
+    store i32 %77, i32* @x
+    %78 = load i32, i32* @x
+    %79 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %78)
+    %str9 = alloca [54 x i8]
+    %80 = bitcast [54 x i8]* %str9 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %80, i8* align 1 getelementptr inbounds ([54 x i8], [54 x i8]* @str9, i32 0, i32 0), i64 54, i1 false)
+    %81 = getelementptr inbounds [54 x i8], [54 x i8]* %str9, i32 0, i32 0
+    %82 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %81)
+    %83 = call double @magicznaKalkulacja(i32 10, double 2.5)
+    store double %83, double* @wynikMagii
+    %84 = load double, double* @wynikMagii
+    %85 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp_real, i32 0, i32 0), double %84)
+    %str10 = alloca [50 x i8]
+    %86 = bitcast [50 x i8]* %str10 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %86, i8* align 1 getelementptr inbounds ([50 x i8], [50 x i8]* @str10, i32 0, i32 0), i64 50, i1 false)
+    %87 = getelementptr inbounds [50 x i8], [50 x i8]* %str10, i32 0, i32 0
+    %88 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %87)
+    %89 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 0
+    %90 = load i32, i32* %89
+    %91 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %90)
+    %92 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 1
+    %93 = load i32, i32* %92
+    %94 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %93)
+    %95 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 2
+    %96 = load i32, i32* %95
+    %97 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %96)
+    %str11 = alloca [25 x i8]
+    %98 = bitcast [25 x i8]* %str11 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %98, i8* align 1 getelementptr inbounds ([25 x i8], [25 x i8]* @str11, i32 0, i32 0), i64 25, i1 false)
+    %99 = getelementptr inbounds [25 x i8], [25 x i8]* %str11, i32 0, i32 0
+    %100 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %99)
+    %101 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 0, i32 0
+    %102 = load i32, i32* %101
+    %103 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %102)
+    %104 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 0, i32 1
+    %105 = load i32, i32* %104
+    %106 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %105)
+    %107 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 1, i32 0
+    %108 = load i32, i32* %107
+    %109 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %108)
+    %110 = getelementptr inbounds [2 x [2 x i32]], [2 x [2 x i32]]* @globalnaMacierz, i32 0, i32 1, i32 1
+    %111 = load i32, i32* %110
+    %112 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %111)
+    %str12 = alloca [42 x i8]
+    %113 = bitcast [42 x i8]* %str12 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %113, i8* align 1 getelementptr inbounds ([42 x i8], [42 x i8]* @str12, i32 0, i32 0), i64 42, i1 false)
+    %114 = getelementptr inbounds [42 x i8], [42 x i8]* %str12, i32 0, i32 0
+    %115 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %114)
+    %116 = call i32 @testujKolekcje()
+    store i32 %116, i32* @smieci
+    %str13 = alloca [26 x i8]
+    %117 = bitcast [26 x i8]* %str13 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %117, i8* align 1 getelementptr inbounds ([26 x i8], [26 x i8]* @str13, i32 0, i32 0), i64 26, i1 false)
+    %118 = getelementptr inbounds [26 x i8], [26 x i8]* %str13, i32 0, i32 0
     %119 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %118)
-    store i32 5, i32* %iterator
-    br label %for_cond_10
-for_cond_10:
-    %120 = load i32, i32* %iterator
-    %121 = icmp sle i32 %120, 1
-    %122 = icmp sge i32 %120, 1
-    %123 = icmp slt i32 -1, 0
-    %124 = select i1 %123, i1 %122, i1 %121
-    br i1 %124, label %for_body_10, label %for_end_10
-for_body_10:
-    %str29 = alloca [18 x i8]
-    %125 = bitcast [18 x i8]* %str29 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %125, i8* align 1 getelementptr inbounds ([18 x i8], [18 x i8]* @str29, i32 0, i32 0), i64 18, i1 false)
-    %126 = getelementptr inbounds [18 x i8], [18 x i8]* %str29, i32 0, i32 0
-    %127 = load i32, i32* %iterator
-    %str30 = alloca [17 x i8]
-    %128 = getelementptr inbounds [17 x i8], [17 x i8]* %str30, i32 0, i32 0
-    %129 = call i32 (i8*, i8*, ...) @sprintf(i8* %128, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strspi, i32 0, i32 0), i32 %127)
-    %str31 = alloca [34 x i8]
-    %130 = getelementptr inbounds [34 x i8], [34 x i8]* %str31, i32 0, i32 0
-    %131 = call i8* @strcpy(i8* %130, i8* %126)
-    %132 = call i8* @strcat(i8* %130, i8* %128)
-    %133 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %130)
-    %134 = load i32, i32* %iterator
-    %135 = add i32 %134, -1
-    store i32 %135, i32* %iterator
-    br label %for_cond_10
-for_end_10:
-    %str32 = alloca [23 x i8]
-    %136 = bitcast [23 x i8]* %str32 to i8*
-    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %136, i8* align 1 getelementptr inbounds ([23 x i8], [23 x i8]* @str32, i32 0, i32 0), i64 23, i1 false)
-    %137 = getelementptr inbounds [23 x i8], [23 x i8]* %str32, i32 0, i32 0
-    %138 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %137)
+    %str14 = alloca [56 x i8]
+    %120 = bitcast [56 x i8]* %str14 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %120, i8* align 1 getelementptr inbounds ([56 x i8], [56 x i8]* @str14, i32 0, i32 0), i64 56, i1 false)
+    %121 = getelementptr inbounds [56 x i8], [56 x i8]* %str14, i32 0, i32 0
+    %122 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %121)
+    %123 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 0
+    %124 = load i32, i32* %123
+    %125 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %124)
+    %126 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 1
+    %127 = load i32, i32* %126
+    %128 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %127)
+    %129 = getelementptr inbounds [3 x i32], [3 x i32]* @globalnaTablica, i32 0, i32 2
+    %130 = load i32, i32* %129
+    %131 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %130)
+    %str15 = alloca [15 x i8]
+    %132 = bitcast [15 x i8]* %str15 to i8*
+    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 1 %132, i8* align 1 getelementptr inbounds ([15 x i8], [15 x i8]* @str15, i32 0, i32 0), i64 15, i1 false)
+    %133 = getelementptr inbounds [15 x i8], [15 x i8]* %str15, i32 0, i32 0
+    %134 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strps, i32 0, i32 0), i8* %133)
     ret i32 0
 }
 

@@ -1,7 +1,6 @@
 grammar LangX;
 
-prog: start+ EOF 
-    ;
+prog: (functionDecl | start)+ EOF ; 
 
 start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                 #declareMatrix
     | ID '[' expr ']' '[' expr ']' 'be transformed into' expr ';'   #assignMatrixElem
@@ -27,7 +26,11 @@ start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                 #declareMatr
     | ifStatement                                                   #ifStmtNode
     | whileStatement                                                #whileStmtNode
     | forStatement                                                  #forStmtNode
+
+    | ID '(' argList? ')'                                           #functionCallStat
+    | 'Fulfill' expr ';'                                            #returnStat
     ;
+
 
 ifStatement: ifCond '{' start* '}' elseBlock? ;
 ifCond: 'Judge' expr ;
@@ -45,6 +48,11 @@ forInitCond: forStartExpr 'to' expr               #forTo
            ;
 forStartExpr: 'Way of the Cross' ID 'Stations' expr ;
 
+functionDecl: 'Miracle' type ID '(' paramList? ')' '{' start* '}' ;
+paramList: type ID (',' type ID)* ;
+
+argList: expr (',' expr)* ;
+
 type: 'Mortal' | 'Divine' | 'SmallDivine' | 'Eternal' | 'Dogma';
 
 expr: '-' expr                                              #unaryMinus
@@ -55,6 +63,7 @@ expr: '-' expr                                              #unaryMinus
     | expr andOp expr                                       #logicAnd
     | expr orOp expr                                        #logicOr
     | expr op='XOR' expr                                    #logicXor
+    | ID '(' argList? ')'                                   #functionCallExpr
     | ID '[' expr ']' '[' expr ']'                          #matrixElem
     | ID '[' expr ']'                                       #arrayElem
     | 'Heaven'                                              #trueConst

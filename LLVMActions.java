@@ -1,5 +1,7 @@
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.ArrayList; 
+import java.util.List;
 
 class Value {
     public String name;
@@ -11,6 +13,8 @@ class Value {
     public boolean isMatrix;
     public int rows;
     public int cols;
+
+    public boolean isGlobal;
 
     public Value(String name, String type, int length) {
         this.name = name;
@@ -44,10 +48,19 @@ class Value {
         this.rows = rows;
         this.cols = cols;
     }
+
+    public String getLLVMId() {
+        return (isGlobal ? "@" : "%") + name;
+    }
 }
 
+class FunctionData {
+    public String type;
+    public List<String> paramTypes = new ArrayList<>();
+    public List<String> paramNames = new ArrayList<>();
+}
 public class LLVMActions extends LangXBaseListener {
-    HashMap<String, Value> variables = new HashMap<>(); 
+    Stack<HashMap<String, Value>> scopes = new Stack<>();
     Stack<Value> stack = new Stack<>();
     Stack<Integer> brStack = new Stack<>();
     Stack<Integer> ifStack = new Stack<>();
@@ -55,8 +68,31 @@ public class LLVMActions extends LangXBaseListener {
     Stack<Integer> forStack = new Stack<>();
     Stack<String> forVarStack = new Stack<>();
     Stack<String> forStepStack = new Stack<>();
-    
+    HashMap<String, FunctionData> functions = new HashMap<>();
+    String currentFunctionType = null;
+
     static int BUFFER_SIZE = 256; 
+    public LLVMActions() {
+        scopes.push(new HashMap<>());
+    }
+
+    private boolean isDeclaredInCurrentScope(String ID) {
+        return scopes.peek().containsKey(ID);
+    }
+
+    private Value getVariable(String ID) {
+        for (int i = scopes.size() - 1; i >= 0; i--) {
+            if (scopes.get(i).containsKey(ID)) {
+                return scopes.get(i).get(ID);
+            }
+        }
+        return null; 
+    }
+
+    private void addVariable(String ID, Value val) {
+        val.isGlobal = (scopes.size() == 1); 
+        scopes.peek().put(ID, val);
+    }
 
     @Override
     public void exitProg(LangXParser.ProgContext ctx) {
@@ -85,6 +121,22 @@ public class LLVMActions extends LangXBaseListener {
         if (v1.type.equals("Mortal") && v2.type.equals("Mortal")) {
             LLVMGenerator.arithmetic(op, v1.name, v2.name, "Mortal");
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Mortal", 0));
+        } else if (v1.type.equals("Mortal") && v2.type.equals("Divine")) {
+            String castedV1 = LLVMGenerator.mortal_to_divine(v1.name);
+            LLVMGenerator.arithmetic(op, castedV1, v2.name, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        }else if (v1.type.equals("Divine") && v2.type.equals("Mortal")) {
+            String castedV2 = LLVMGenerator.mortal_to_divine(v2.name);
+            LLVMGenerator.arithmetic(op, v1.name, castedV2, "Divine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
+        }else if (v1.type.equals("Mortal") && v2.type.equals("SmallDivine")) {
+            String castedV1 = LLVMGenerator.mortal_to_small_divine(v1.name);
+            LLVMGenerator.arithmetic(op, castedV1, v2.name, "SmallDivine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
+        }else if (v1.type.equals("SmallDivine") && v2.type.equals("Mortal")) {
+            String castedV2 = LLVMGenerator.mortal_to_small_divine(v2.name);
+            LLVMGenerator.arithmetic(op, v1.name, castedV2, "SmallDivine");
+            stack.push(new Value("%" + (LLVMGenerator.reg - 1), "SmallDivine", 0));
         } else if (v1.type.equals("Divine") && v2.type.equals("Divine")) {
             LLVMGenerator.arithmetic(op, v1.name, v2.name, "Divine");
             stack.push(new Value("%" + (LLVMGenerator.reg - 1), "Divine", 0));
@@ -120,7 +172,7 @@ public class LLVMActions extends LangXBaseListener {
         String type = ctx.type().getText();
         int size = Integer.parseInt(ctx.INT().getText());
 
-        if (variables.containsKey(ID)) {
+        if (isDeclaredInCurrentScope(ID)) {
             System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
@@ -132,18 +184,22 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Array size must be greater than 0.");
             System.exit(1);
         }
-        variables.put(ID, new Value(ID, type, 0, true, size));
-        LLVMGenerator.declareArray(ID, type, size);
+
+        Value newVar = new Value(ID, type, 0, true, size);
+        addVariable(ID, newVar);
+        
+        if (newVar.isGlobal) LLVMGenerator.declareGlobalArray(ID, type, size);
+        else LLVMGenerator.declareArray(ID, type, size);
     }
 
     @Override
     public void exitAssignArrayElem(LangXParser.AssignArrayElemContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
+        Value arr = getVariable(ID);
+        if (arr == null) {
             System.err.println("Semantic error: Array " + ID + " does not exist!");
             System.exit(1);
         }
-        Value arr = variables.get(ID);
         if (!arr.isArray) {
             System.err.println("Semantic error: " + ID + " is not an array.");
             System.exit(1);
@@ -157,18 +213,18 @@ public class LLVMActions extends LangXBaseListener {
         checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
         String finalValueReg = getCastedValueReg(arr.type, val, ctx.getStart().getLine());
 
-        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        String address = LLVMGenerator.getArrayElementAddress(arr.getLLVMId(), arr.type, arr.arraySize, index.name);
         LLVMGenerator.assign(address, finalValueReg, arr.type);
     }
 
     @Override
     public void exitReadArrayElem(LangXParser.ReadArrayElemContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
+        Value arr = getVariable(ID);
+        if (arr == null) {
             System.err.println("Semantic error: Array " + ID + " does not exist!");
             System.exit(1);
         }
-        Value arr = variables.get(ID);
         if (!arr.isArray) {
             System.err.println("Semantic error: " + ID + " is not an array.");
             System.exit(1);
@@ -179,24 +235,26 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
-        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        String address = LLVMGenerator.getArrayElementAddress(arr.getLLVMId(), arr.type, arr.arraySize, index.name);
         LLVMGenerator.read(address, arr.type, 0);
     }
 
     @Override
     public void exitWriteId(LangXParser.WriteIdContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
+        Value val = getVariable(ID);
+
+        if (val == null) {
             System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        Value val = variables.get(ID);
+
         if (val.isMatrix) {
-            LLVMGenerator.printMatrix(ID, val.type, val.rows, val.cols);
+            LLVMGenerator.printMatrix(val.getLLVMId(), val.type, val.rows, val.cols);
         } else if (val.isArray) {
-            LLVMGenerator.printArray(ID, val.type, val.arraySize);
+            LLVMGenerator.printArray(val.getLLVMId(), val.type, val.arraySize);
         } else {
-            LLVMGenerator.load("%" + ID, val.type);
+            LLVMGenerator.load(val.getLLVMId(), val.type);
             LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), val.type);
         }
     }
@@ -228,17 +286,20 @@ public class LLVMActions extends LangXBaseListener {
         String ID = ctx.ID().getText();
         String type = ctx.type().getText();
         
-        if (variables.containsKey(ID)) {
+        if (isDeclaredInCurrentScope(ID)) {
             System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
-        
         Value val = stack.pop();
         String finalValueReg = getCastedValueReg(type, val, ctx.getStart().getLine());
 
-        variables.put(ID, new Value(ID, type, val.length));
-        LLVMGenerator.declare(ID, type);
-        LLVMGenerator.assign("%" + ID, finalValueReg, type);
+        Value newVar = new Value(ID, type, val.length);
+        addVariable(ID, newVar);
+        
+        if (newVar.isGlobal) LLVMGenerator.declareGlobal(ID, type);
+        else LLVMGenerator.declare(ID, type);
+        
+        LLVMGenerator.assign(newVar.getLLVMId(), finalValueReg, type);
     }
 
     @Override
@@ -246,23 +307,27 @@ public class LLVMActions extends LangXBaseListener {
         String ID = ctx.ID().getText();
         String type = ctx.type().getText();
         
-        if (variables.containsKey(ID)) {
+        if (isDeclaredInCurrentScope(ID)) {
             System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
         
-        variables.put(ID, new Value(ID, type, BUFFER_SIZE));
-        LLVMGenerator.declare(ID, type);
+        Value newVar = new Value(ID, type, BUFFER_SIZE);
+        addVariable(ID, newVar); 
+        
+        if (newVar.isGlobal) LLVMGenerator.declareGlobal(ID, type);
+        else LLVMGenerator.declare(ID, type);
     }
 
     @Override
     public void exitAssign(LangXParser.AssignContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
+        Value var = getVariable(ID);
+
+        if (var == null) {
             System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        Value var = variables.get(ID);
         if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Cannot assign to whole array " + ID + ". Use " + ID + "[index].");
             System.exit(1);
@@ -272,7 +337,7 @@ public class LLVMActions extends LangXBaseListener {
         String finalValueReg = getCastedValueReg(var.type, val, ctx.getStart().getLine());
         
         var.length = val.length; 
-        LLVMGenerator.assign("%" + ID, finalValueReg, var.type);
+        LLVMGenerator.assign(var.getLLVMId(), finalValueReg, var.type);
     }
 
     @Override
@@ -284,16 +349,17 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitRead(LangXParser.ReadContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
+        Value var = getVariable(ID);
+
+        if (var == null) {
             System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        Value var = variables.get(ID);
         if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Cannot Confess whole array " + ID + ". Use " + ID + "[index].");
             System.exit(1);
         }
-        LLVMGenerator.read("%" + ID, var.type, var.length);
+        LLVMGenerator.read(var.getLLVMId(), var.type, var.length);
     }
 
     @Override
@@ -345,32 +411,28 @@ public class LLVMActions extends LangXBaseListener {
         LLVMGenerator.whileEnd(b);
     }
 
-    @Override
+@Override
     public void exitForStartExpr(LangXParser.ForStartExprContext ctx) {
         String id = ctx.ID().getText();
-        if (!variables.containsKey(id)) {
-            System.err.println("Semantic error: Variable " + id + " must be Created before Pilgrimage.");
+        Value var = getVariable(id);
+        if (var == null) {
+            System.err.println("Semantic error: Variable " + id + " must be Created before Way of the Cross.");
             System.exit(1);
         }
-        Value var = variables.get(id);
         if (!var.type.equals("Mortal")) {
-            System.err.println("Semantic error: Pilgrimage variable must be of type Mortal.");
+            System.err.println("Semantic error: Way of the Cross variable must be of type Mortal.");
             System.exit(1);
         }
-        
         Value startVal = stack.pop();
         if (!startVal.type.equals("Mortal")) {
-            System.err.println("Semantic error: Pilgrimage start value must be Mortal.");
+            System.err.println("Semantic error: Way of the Cross start value must be Mortal.");
             System.exit(1);
         }
+        LLVMGenerator.assign(var.getLLVMId(), startVal.name, "Mortal");
 
-        // Przypisanie wartości początkowej do zmiennej iteracyjnej
-        LLVMGenerator.assign("%" + id, startVal.name, "Mortal");
-
-        // Otwieramy blok warunku
         int b = LLVMGenerator.br++;
         forStack.push(b);
-        forVarStack.push(id);
+        forVarStack.push(var.getLLVMId());
         
         LLVMGenerator.forCondStart(b);
     }
@@ -384,11 +446,11 @@ public class LLVMActions extends LangXBaseListener {
         }
 
         int b = forStack.peek();
-        String id = forVarStack.peek();
+        String idReg = forVarStack.peek();
         String stepReg = "1";
         forStepStack.push(stepReg);
-        
-        LLVMGenerator.forCond(id, endVal.name, stepReg, b);
+
+        LLVMGenerator.forCond(idReg, endVal.name, stepReg, b);
     }
 
     @Override
@@ -532,11 +594,8 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitArrayElem(LangXParser.ArrayElemContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Array " + ID + " does not exist!");
-            System.exit(1);
-        }
-        Value arr = variables.get(ID);
+        Value arr = getVariable(ID);
+
         if (!arr.isArray) {
             System.err.println("Semantic error: " + ID + " is not an array.");
             System.exit(1);
@@ -547,7 +606,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         checkArrayIndexIfConst(ID, arr, index, ctx.getStart().getLine());
-        String address = LLVMGenerator.getArrayElementAddress(ID, arr.type, arr.arraySize, index.name);
+        String address = LLVMGenerator.getArrayElementAddress(arr.getLLVMId(), arr.type, arr.arraySize, index.name);
         LLVMGenerator.load(address, arr.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), arr.type, 0));
     }
@@ -583,16 +642,17 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitVar(LangXParser.VarContext ctx) {
         String ID = ctx.ID().getText();
-        if (!variables.containsKey(ID)) {
-            System.err.println("Semantic error: Value not declared " + ID);
+        Value var = getVariable(ID);
+
+        if (var == null) {
+            System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        Value var = variables.get(ID);
         if (var.isArray || var.isMatrix) {
             System.err.println("Semantic error: Array " + ID + " requires index.");
             System.exit(1);
         }
-        LLVMGenerator.load("%" + ID, var.type);
+        LLVMGenerator.load(var.getLLVMId(), var.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
 
@@ -634,12 +694,12 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     private void printArraySlice(String ID, Integer startParam, Integer endParam, String rangeText) {
+        Value arr = getVariable(ID);
 
-        if (!variables.containsKey(ID)) {
+        if (arr == null) {
             System.err.println("Semantic error: Array " + ID + " does not exist!");
             System.exit(1);
         }
-        Value arr = variables.get(ID);
         if (!arr.isArray) {
             System.err.println("Semantic error: " + ID + " is not an array.");
             System.exit(1);
@@ -653,7 +713,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         
-        LLVMGenerator.printArrayRange(ID, arr.type, arr.arraySize, start, end);
+        LLVMGenerator.printArrayRange(arr.getLLVMId(), arr.type, arr.arraySize, start, end);
     }
 
     private Value stringify(Value v) {
@@ -675,11 +735,11 @@ public class LLVMActions extends LangXBaseListener {
     }
 
     private Value getMatrixOrDie(String ID, int line) {
-        if (!variables.containsKey(ID)) {
+        Value matrix = getVariable(ID);
+        if (matrix == null) {
             System.err.println("Semantic error (line " + line + "): Matrix " + ID + " does not exist!");
             System.exit(1);
         }
-        Value matrix = variables.get(ID);
         if (!matrix.isMatrix) {
             System.err.println("Semantic error (line " + line + "): " + ID + " is not a matrix.");
             System.exit(1);
@@ -710,7 +770,7 @@ public class LLVMActions extends LangXBaseListener {
         String type = ctx.type().getText();
         int rows = Integer.parseInt(ctx.INT(0).getText());
         int cols = Integer.parseInt(ctx.INT(1).getText());
-        if (variables.containsKey(ID)) {
+        if (isDeclaredInCurrentScope(ID)) {
             System.err.println("Semantic error: Value " + ID + " is already declared!");
             System.exit(1);
         }
@@ -722,8 +782,11 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Matrix dimensions must be greater than 0.");
             System.exit(1);
         }
-        variables.put(ID, new Value(ID, type, 0, true, rows, cols));
-        LLVMGenerator.declareMatrix(ID, type, rows, cols);
+        Value newVar = new Value(ID, type, 0, true, rows, cols);
+        addVariable(ID, newVar);
+        
+        if (newVar.isGlobal) LLVMGenerator.declareGlobalMatrix(ID, type, rows, cols);
+        else LLVMGenerator.declareMatrix(ID, type, rows, cols);
     }
 
     @Override
@@ -737,7 +800,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         checkMatrixIndexIfConst(ID, matrix, row, col, ctx.getStart().getLine());
-        String address = LLVMGenerator.getMatrixElementAddress(ID, matrix.type, matrix.rows,matrix.cols,row.name, col.name);
+        String address = LLVMGenerator.getMatrixElementAddress(matrix.getLLVMId(), matrix.type, matrix.rows,matrix.cols,row.name, col.name);
         LLVMGenerator.load(address, matrix.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), matrix.type, 0));
     }
@@ -756,7 +819,7 @@ public class LLVMActions extends LangXBaseListener {
         checkMatrixIndexIfConst(ID, matrix, row, col, ctx.getStart().getLine());
         String finalValueReg = getCastedValueReg(matrix.type, val, ctx.getStart().getLine());
 
-        String address = LLVMGenerator.getMatrixElementAddress(ID, matrix.type, matrix.rows, matrix.cols, row.name,col.name);
+        String address = LLVMGenerator.getMatrixElementAddress(matrix.getLLVMId(), matrix.type, matrix.rows, matrix.cols, row.name,col.name);
         LLVMGenerator.assign(address, finalValueReg, matrix.type);
     }
 
@@ -771,7 +834,7 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         checkMatrixIndexIfConst(ID, matrix, row, col, ctx.getStart().getLine());
-        String address = LLVMGenerator.getMatrixElementAddress( ID,matrix.type,matrix.rows, matrix.cols,row.name,col.name);
+        String address = LLVMGenerator.getMatrixElementAddress(matrix.getLLVMId(), matrix.type,matrix.rows, matrix.cols,row.name,col.name);
         LLVMGenerator.read(address, matrix.type, 0);
     }
 
@@ -784,7 +847,7 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Matrix row out of bounds: "+ ID + "[" + row + "]. Valid rows are 0.." + (matrix.rows - 1) + ".");
             System.exit(1);
         }
-        LLVMGenerator.printMatrixRow(ID, matrix.type, matrix.rows, matrix.cols, row);
+        LLVMGenerator.printMatrixRow(matrix.getLLVMId(), matrix.type, matrix.rows, matrix.cols, row);
     }
 
     @Override
@@ -796,7 +859,89 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Matrix column out of bounds: " + ID + "[" + col + "]. Valid columns are 0.." + (matrix.cols - 1) + ".");
             System.exit(1);
         }
-        LLVMGenerator.printMatrixColumn(ID, matrix.type, matrix.rows, matrix.cols, col);
+        LLVMGenerator.printMatrixColumn(matrix.getLLVMId(), matrix.type, matrix.rows, matrix.cols, col);
     }
- 
+
+    @Override
+    public void enterFunctionDecl(LangXParser.FunctionDeclContext ctx) {
+        String ID = ctx.ID().getText();
+        String type = ctx.type().getText();
+        currentFunctionType = type; 
+        
+        FunctionData fd = new FunctionData();
+        fd.type = type;
+        
+        if (ctx.paramList() != null) {
+            for (int i = 0; i < ctx.paramList().type().size(); i++) {
+                fd.paramTypes.add(ctx.paramList().type(i).getText());
+                fd.paramNames.add(ctx.paramList().ID(i).getText());
+            }
+        }
+        functions.put(ID, fd);
+        scopes.push(new HashMap<>()); 
+        
+        for (int i = 0; i < fd.paramNames.size(); i++) {
+            addVariable(fd.paramNames.get(i), new Value(fd.paramNames.get(i), fd.paramTypes.get(i), 0));
+        }
+        
+        LLVMGenerator.startFunction(ID, type, fd.paramNames, fd.paramTypes);
+    }
+
+    @Override
+    public void exitFunctionDecl(LangXParser.FunctionDeclContext ctx) {
+        scopes.pop(); 
+        LLVMGenerator.endFunction();
+        currentFunctionType = null;
+    }
+
+    @Override
+    public void exitReturnStat(LangXParser.ReturnStatContext ctx) {
+        Value val = stack.pop();
+        if (currentFunctionType == null) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Fulfill outside of a Miracle.");
+            System.exit(1);
+        }
+    
+        String finalReg = getCastedValueReg(currentFunctionType, val, ctx.getStart().getLine());
+        LLVMGenerator.fulfill(finalReg, currentFunctionType);
+    }
+
+    private void handleFunctionCall(String ID, LangXParser.ArgListContext argListCtx, int line) {
+        if (!functions.containsKey(ID)) {
+            System.err.println("Semantic error (line " + line + "): Function " + ID + " does not exist!");
+            System.exit(1);
+        }
+        FunctionData fd = functions.get(ID);
+        int argCount = argListCtx == null ? 0 : argListCtx.expr().size();
+        
+        if (argCount != fd.paramTypes.size()) {
+            System.err.println("Semantic error: Function " + ID + " expects " + fd.paramTypes.size() + " arguments.");
+            System.exit(1);
+        }
+        
+        List<Value> args = new ArrayList<>();
+        for (int i = 0; i < argCount; i++) {
+            args.add(0, stack.pop()); 
+        }
+        
+        List<String> argRegs = new ArrayList<>();
+        for (int i = 0; i < argCount; i++) {
+            String finalReg = getCastedValueReg(fd.paramTypes.get(i), args.get(i), line);
+            argRegs.add(finalReg);
+        }
+        
+        String retReg = LLVMGenerator.callFunction(ID, fd.type, argRegs, fd.paramTypes);
+        stack.push(new Value(retReg, fd.type, 0));
+    }
+
+    @Override
+    public void exitFunctionCallStat(LangXParser.FunctionCallStatContext ctx) {
+        handleFunctionCall(ctx.ID().getText(), ctx.argList(), ctx.getStart().getLine());
+        stack.pop(); 
+    }
+
+    @Override
+    public void exitFunctionCallExpr(LangXParser.FunctionCallExprContext ctx) {
+        handleFunctionCall(ctx.ID().getText(), ctx.argList(), ctx.getStart().getLine());
+    }
 }
