@@ -423,8 +423,8 @@ class LLVMGenerator {
       main_text += "for_cond_" + brCnt + ":\n";
    }
 
-   static void forCond(String idReg, String endValReg, String stepReg, int brCnt) {
-      main_text += "    %" + reg + " = load i32, i32* %" + idReg + "\n";
+static void forCond(String idReg, String endValReg, String stepReg, int brCnt) {
+      main_text += "    %" + reg + " = load i32, i32* " + idReg + "\n";
       String currVal = "%" + reg;
       reg++;
 
@@ -449,14 +449,14 @@ class LLVMGenerator {
    }
 
    static void forInc(String idReg, String stepReg, int brCnt) {
-      main_text += "    %" + reg + " = load i32, i32* %" + idReg + "\n";
+      main_text += "    %" + reg + " = load i32, i32* " + idReg + "\n";
       String currVal = "%" + reg;
       reg++;
       main_text += "    %" + reg + " = add i32 " + currVal + ", " + stepReg + "\n";
       String nextVal = "%" + reg;
       reg++;
-      main_text += "    store i32 " + nextVal + ", i32* %" + idReg + "\n";
 
+      main_text += "    store i32 " + nextVal + ", i32* " + idReg + "\n";
       main_text += "    br label %for_cond_" + brCnt + "\n";
       main_text += "for_end_" + brCnt + ":\n";
    }
