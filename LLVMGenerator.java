@@ -359,6 +359,108 @@ class LLVMGenerator {
       }
    }
 
+
+   static void compare(String op, String val1, String val2, String type) {
+      String llvmType = llvmType(type);
+      String cond = "";
+        
+      if (type.equals("Mortal")) {
+         if (op.equals("==")) cond = "eq";
+         else if (op.equals("!=")) cond = "ne";
+         else if (op.equals(">")) cond = "sgt";
+         else if (op.equals("<")) cond = "slt";
+         else if (op.equals(">=")) cond = "sge";
+         else if (op.equals("<=")) cond = "sle";
+         main_text += "    %" + reg + " = icmp " + cond + " " + llvmType + " " + val1 + ", " + val2 + "\n";
+      } else { // Divine / SmallDivine
+         if (op.equals("==")) cond = "oeq";
+         else if (op.equals("!=")) cond = "one";
+         else if (op.equals(">")) cond = "ogt";
+         else if (op.equals("<")) cond = "olt";
+         else if (op.equals(">=")) cond = "oge";
+         else if (op.equals("<=")) cond = "ole";
+         main_text += "    %" + reg + " = fcmp " + cond + " " + llvmType + " " + val1 + ", " + val2 + "\n";
+      }
+      reg++;
+   }
+
+   static void ifStart(String condReg, int brCnt) {
+      main_text += "    br i1 " + condReg + ", label %if_true_" + brCnt + ", label %if_false_" + brCnt + "\n";
+      main_text += "if_true_" + brCnt + ":\n";
+   }
+
+   static void elseStart(int brCnt) {
+      main_text += "    br label %if_end_" + brCnt + "\n";
+      main_text += "if_false_" + brCnt + ":\n";
+   }
+
+   static void ifEnd(int brCnt, boolean hasElse) {
+      main_text += "    br label %if_end_" + brCnt + "\n";
+      if (!hasElse) {
+         main_text += "if_false_" + brCnt + ":\n";
+         main_text += "    br label %if_end_" + brCnt + "\n";
+      }
+      main_text += "if_end_" + brCnt + ":\n";
+   }
+
+   static void whileStart(int brCnt) {
+      main_text += "    br label %while_cond_" + brCnt + "\n";
+      main_text += "while_cond_" + brCnt + ":\n";
+   }
+
+   static void whileCond(String condReg, int brCnt) {
+      main_text += "    br i1 " + condReg + ", label %while_body_" + brCnt + ", label %while_end_" + brCnt + "\n";
+      main_text += "while_body_" + brCnt + ":\n";
+   }
+
+   static void whileEnd(int brCnt) {
+      main_text += "    br label %while_cond_" + brCnt + "\n";
+      main_text += "while_end_" + brCnt + ":\n";
+   }
+
+   static void forCondStart(int brCnt) {
+      main_text += "    br label %for_cond_" + brCnt + "\n";
+      main_text += "for_cond_" + brCnt + ":\n";
+   }
+
+static void forCond(String idReg, String endValReg, String stepReg, int brCnt) {
+      main_text += "    %" + reg + " = load i32, i32* " + idReg + "\n";
+      String currVal = "%" + reg;
+      reg++;
+
+      main_text += "    %" + reg + " = icmp sle i32 " + currVal + ", " + endValReg + "\n";
+      String cmpPos = "%" + reg;
+      reg++;
+
+      main_text += "    %" + reg + " = icmp sge i32 " + currVal + ", " + endValReg + "\n";
+      String cmpNeg = "%" + reg;
+      reg++;
+
+      main_text += "    %" + reg + " = icmp slt i32 " + stepReg + ", 0\n";
+      String isStepNeg = "%" + reg;
+      reg++;
+
+      main_text += "    %" + reg + " = select i1 " + isStepNeg + ", i1 " + cmpNeg + ", i1 " + cmpPos + "\n";
+      String condReg = "%" + reg;
+      reg++;
+
+      main_text += "    br i1 " + condReg + ", label %for_body_" + brCnt + ", label %for_end_" + brCnt + "\n";
+      main_text += "for_body_" + brCnt + ":\n";
+   }
+
+   static void forInc(String idReg, String stepReg, int brCnt) {
+      main_text += "    %" + reg + " = load i32, i32* " + idReg + "\n";
+      String currVal = "%" + reg;
+      reg++;
+      main_text += "    %" + reg + " = add i32 " + currVal + ", " + stepReg + "\n";
+      String nextVal = "%" + reg;
+      reg++;
+
+      main_text += "    store i32 " + nextVal + ", i32* " + idReg + "\n";
+      main_text += "    br label %for_cond_" + brCnt + "\n";
+      main_text += "for_end_" + brCnt + ":\n";
+   }
+
    static void unaryMinus(String val, String type) {
       if (type.equals("Mortal")) {
          main_text += "    %" + reg + " = sub i32 0, " + val + "\n";

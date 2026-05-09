@@ -14,27 +14,47 @@ Infallible Compilation: If thy code faileth to build, it is not the compiler tha
 Behold, a glimpse into the sacred scrolls of a .god file:
 
 ```
-Create Mortal sin;
-Confess sin;
-Create Mortal sin2 in the image of sin * 2;
-Reveal sin2;
-sin2 be transformed into 0;
-Reveal sin2;
+Create Mortal soulPower;
+Confess soulPower;
 
-Create Divine grace;
-Confess grace;
-Create Divine grace2 in the image of grace * 3.14;
-Reveal grace2;
-grace2 be transformed into 2.0 + 4.2 * (3.0 + 1.0) - 5.0 / 5.0;
-Reveal grace2;
+Create Divine grace in the image of 7.77;
+Create SmallDivine spark in the image of 1.1;
+Create Eternal pilgrimName in the image of "Lazarus";
+Create Dogma isAscended in the image of Hell;
 
-Create Eternal glory;
-Confess glory;
-Reveal glory;
-Create Eternal glory2 in the image of "holy " + glory;
-Reveal glory2;
-glory2 be transformed into 3 + " is a value of " + 7.0;
-Reveal glory2;
+Reveal "Blessings upon you, " + pilgrimName;
+
+Judge soulPower > 100 {
+    Reveal "Status: Divine Being";
+    isAscended be transformed into Heaven;
+} Otherwise Judge soulPower > 50 {
+    Reveal "Status: Mortal Hero";
+} Otherwise {
+    Reveal "Status: Lost Soul";
+}
+
+Judge grace > spark {
+    Reveal "Your grace shines brighter than the spark.";
+}
+
+Create Mortal purification;
+Way of the Cross purification Stations 1 to 3 {
+    Reveal "Purification at station: " + purification;
+}
+
+Create Mortal descent;
+Way of the Cross descent Stations 10 to 0 step -2 {
+    Reveal "Descending into the abyss: " + descent;
+}
+
+Create Mortal prayerCount in the image of 3;
+Pilgrimage prayerCount > 0 AND isAscended {
+    Reveal "Uttering prayer... " + prayerCount;
+    prayerCount be transformed into prayerCount - 1;
+}
+
+Create Dogma finalJudgment in the image of isAscended OR (grace > 5.0);
+Reveal "Final Judgment: " + finalJudgment;
 ```
 
 # ⚡ Installation (The Ritual)

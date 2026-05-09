@@ -3,8 +3,8 @@ Reveal "========= Mortal operations =========";
 Create Mortal sin;
 Reveal "Value of Mortal:";
 Confess sin;
-Create Mortal sin2 in the image of sin * 2;
-Reveal "Value of Mortal * 2: " + sin2;
+Create Mortal sin2 in the image of sin * -2;
+Reveal "Value of Mortal * -2: " + sin2;
 sin2 be transformed into 0;
 Reveal "Value of Mortal transformed into 0: " + sin2;
 Reveal "";
@@ -25,8 +25,8 @@ Reveal "Value of SmallDivine:";
 Confess smallGrace;
 Create SmallDivine smallGrace2 in the image of smallGrace * 2.0;
 Reveal "Value of SmallDivine * 2: " + smallGrace2;
-smallGrace2 be transformed into 1.0 + 2.0;
-Reveal "Value of SmallDivine transformed into 3.0: " + smallGrace2;
+smallGrace2 be transformed into -1.0 + 2.0;
+Reveal "Value of SmallDivine transformed into 1.0: " + smallGrace2;
 Reveal "";
 
 Reveal "========= Eternal operations =========";
@@ -120,3 +120,145 @@ legion4[0] be transformed into 1;
 Reveal "Whole Dogma table:";
 Reveal legion4;
 Reveal "";
+
+Reveal "========= Matrix operations =========";
+
+Create Mortal matrix[3][4];
+
+matrix[0][0] be transformed into 10;
+matrix[0][1] be transformed into 20;
+matrix[0][2] be transformed into 30;
+matrix[0][3] be transformed into 40;
+
+matrix[1][0] be transformed into 50;
+matrix[1][1] be transformed into 60;
+matrix[1][2] be transformed into 70;
+matrix[1][3] be transformed into 80;
+
+matrix[2][0] be transformed into 90;
+matrix[2][1] be transformed into 100;
+matrix[2][2] be transformed into 110;
+matrix[2][3] be transformed into 120;
+Confess matrix[1][2];
+Reveal matrix[1][2];
+
+Reveal "Value of Mortal matrix[1][2]: " + matrix[1][2];
+
+Reveal "Whole Mortal matrix:";
+Reveal matrix;
+
+Reveal "Mortal matrix row 0:";
+Reveal row matrix[0];
+
+Reveal "Mortal matrix row 1:";
+Reveal row matrix[1];
+
+Reveal "Mortal matrix column 2:";
+Reveal column matrix[2];
+
+Create Mortal rowIndex in the image of 2;
+Create Mortal colIndex in the image of 3;
+Reveal "Value of Mortal matrix[rowIndex][colIndex]: " + matrix[rowIndex][colIndex];
+
+Create Divine divineMatrix[2][2];
+divineMatrix[0][0] be transformed into 1.1;
+divineMatrix[0][1] be transformed into 2.2;
+divineMatrix[1][0] be transformed into 3.3;
+divineMatrix[1][1] be transformed into 4.4;
+
+Reveal "Whole Divine matrix:";
+Reveal divineMatrix;
+
+Reveal "Divine matrix row 1:";
+Reveal row divineMatrix[1];
+
+Reveal "Divine matrix column 0:";
+Reveal column divineMatrix[0];
+
+Create SmallDivine smallDivineMatrix[2][2];
+smallDivineMatrix[0][0] be transformed into 5.5;
+smallDivineMatrix[0][1] be transformed into 6.6;
+smallDivineMatrix[1][0] be transformed into 7.7;
+smallDivineMatrix[1][1] be transformed into 8.8;
+
+Reveal "Whole SmallDivine matrix:";
+Reveal smallDivineMatrix;
+
+Reveal "SmallDivine matrix row 0:";
+Reveal row smallDivineMatrix[0];
+
+Reveal "SmallDivine matrix column 1:";
+Reveal column smallDivineMatrix[1];
+
+Reveal "";
+Reveal "========= The Ultimate Trial of Faith =========";
+
+Create Mortal cycle in the image of 0;
+Create Dogma isFaithful in the image of Heaven;
+
+Reveal "--- Phase 1: Pilgrimage with Dogma AND Equation ---";
+
+Pilgrimage isFaithful AND (5 - cycle) > 0 {
+    Reveal "Current cycle: " + cycle;
+
+    Judge cycle == 2 {
+        Reveal "  [!] Reached cycle 2. Testing deeper faith...";
+        Create Mortal testVal in the image of 10;
+
+        Judge (testVal * 2) > 15 {
+            Reveal "    [*] (testVal * 2) > 15. Faith is strong!";
+        } Otherwise {
+            Reveal "    [-] Faith wavered.";
+        }
+        
+    } Otherwise Judge cycle == 4 {
+        Reveal "  [!] Reached cycle 4. Faith is fading...";
+    
+        isFaithful be transformed into Hell;
+    }
+
+    cycle be transformed into cycle + 1;
+}
+
+Reveal "";
+Reveal "--- Phase 2: Pilgrimage with pure Dogma ---";
+
+Create Dogma pureDogma in the image of Heaven;
+Create Mortal countdown in the image of 3;
+
+Pilgrimage pureDogma {
+    Reveal "Countdown: " + countdown;
+    
+    Judge countdown <= 0 {
+        Reveal "  [!] Countdown is 0. Exiting pure dogma loop.";
+        pureDogma be transformed into Hell;
+    }
+
+    countdown be transformed into countdown - 1;
+}
+
+Reveal "========= Amen =========";
+
+Reveal "";
+
+Reveal "========= Way of the Cross =========";
+Create Mortal stepValue in the image of 2;
+Create Mortal iterator;
+
+Reveal "Way of the Cross by step of 2:";
+Way of the Cross iterator Stations 0 to 3 + 3 step stepValue {
+    Reveal "  Stepping up: " + iterator;
+
+    Create Mortal iterator2;
+    Way of the Cross iterator2 Stations 0 to 2 {
+        Reveal "    inner: " + iterator2;
+    }
+}
+
+Reveal "";
+Reveal "Way of the Cross downwards into the abyss:";
+Way of the Cross iterator Stations 5 to 1 step -1 {
+    Reveal "  Stepping down: " + iterator;
+}
+
+Reveal "All journeys complete.";
