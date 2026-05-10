@@ -14,9 +14,7 @@ class LLVMGenerator {
       if (type.equals("Dogma")) return "i1";
       if (type.equals("Eternal")) return "i8*";
 
-      System.err.println("Internal error: unknown LLVM type " + type);
-      System.exit(1);
-      return "";
+      return "%" + type + "*";
    }
 
    static void declare(String id, String type) {
@@ -87,25 +85,29 @@ class LLVMGenerator {
       return address;
    }
 
-   static void startFunction(String id, String type, java.util.List<String> argNames, java.util.List<String> argTypes) {
+   static void startFunction(String id, String type, java.util.List<String> argNames, java.util.List<String> argTypes, java.util.Map<String, Boolean> isStructMap) {
       main_buffer = main_text; 
       main_text = ""; 
         
-      String llvmType = llvmType(type);
+      String llvmRetType = llvmType(type);
       StringBuilder args = new StringBuilder();
       for(int i=0; i<argNames.size(); i++) {
           if(i > 0) args.append(", ");
-          args.append(llvmType(argTypes.get(i))).append(" %").append(argNames.get(i)).append("_arg");
+          String t = argTypes.get(i);
+          args.append(llvmType(t)).append(" %").append(argNames.get(i)).append("_arg");
       }
         
-      main_text += "define " + llvmType + " @" + id + "(" + args.toString() + ") {\n";
+      main_text += "define " + llvmRetType + " @" + id + "(" + args.toString() + ") {\n";
         
       for(int i=0; i<argNames.size(); i++) {
-          String originalType = argTypes.get(i); 
-          String cleanName = argNames.get(i);   
-          
-          declare(cleanName, originalType);
-          assign("%" + cleanName, "%" + cleanName + "_arg", originalType);
+          String t = argTypes.get(i);
+          String name = argNames.get(i);
+          boolean isStr = isStructMap.getOrDefault(name, false);
+
+          if (!isStr) {
+              declare(name, t);
+              assign("%" + name, "%" + name + "_arg", t);
+          }
       }
    }
 
@@ -130,6 +132,38 @@ class LLVMGenerator {
       String retReg = "%" + reg;
       reg++;
       return retReg;
+   }
+
+   static void defineStruct(String name, java.util.List<String> types) {
+      StringBuilder fields = new StringBuilder();
+      for (int i = 0; i < types.size(); i++) {
+         if (i > 0) fields.append(", ");
+         fields.append(llvmType(types.get(i)));
+      }
+      header_text += "%" + name + " = type { " + fields.toString() + " }\n";
+   }
+
+   static void declareStruct(String id, String structName) {
+      main_text += "    %" + id + " = alloca %" + structName + "\n";
+      main_text += "    store %" + structName + " zeroinitializer, %" + structName + "* %" + id + "\n";
+   }
+
+   static void declareGlobalStruct(String id, String structName) {
+      header_text += "@" + id + " = global %" + structName + " zeroinitializer\n";
+   }
+
+   static String getStructElementAddress(String id, String structName, int fieldIndex) {
+      main_text += "    %" + reg + " = getelementptr inbounds %" + structName + ", %" + structName + "* " + id + ", i32 0, i32 " + fieldIndex + "\n";
+      String address = "%" + reg;
+      reg++;
+      return address;
+   }
+
+   static void copyStruct(String destAddr, String srcAddr, String structName) {
+      main_text += "    %" + reg + " = load %" + structName + ", %" + structName + "* " + srcAddr + "\n";
+      String valReg = "%" + reg;
+      reg++;
+      main_text += "    store %" + structName + " " + valReg + ", %" + structName + "* " + destAddr + "\n";
    }
 
    static void arithmetic(String op, String val1, String val2, String type) {
@@ -372,7 +406,7 @@ class LLVMGenerator {
          else if (op.equals(">=")) cond = "sge";
          else if (op.equals("<=")) cond = "sle";
          main_text += "    %" + reg + " = icmp " + cond + " " + llvmType + " " + val1 + ", " + val2 + "\n";
-      } else { // Divine / SmallDivine
+      } else {
          if (op.equals("==")) cond = "oeq";
          else if (op.equals("!=")) cond = "one";
          else if (op.equals(">")) cond = "ogt";

@@ -31,7 +31,7 @@ Miracle HolyPerson rejuvenate(HolyPerson target) {
     Fulfill target;
 }
 
-Reveal "--- Miracle Legionu ---";
+Reveal "--- Test przekazywania Legionu ---";
 prophet.age be transformed into 150;
 Reveal prophet.age;
 

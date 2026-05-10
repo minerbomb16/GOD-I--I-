@@ -16,6 +16,9 @@ class Value {
 
     public boolean isGlobal;
 
+    public boolean isStruct;
+    public String structType;
+
     public Value(String name, String type, int length) {
         this.name = name;
         this.type = type;
@@ -25,6 +28,7 @@ class Value {
         this.isMatrix = false;
         this.rows = 0;
         this.cols = 0;
+        this.isStruct = false;
     }
 
     public Value(String name, String type, int length, boolean isArray, int arraySize) {
@@ -36,6 +40,7 @@ class Value {
          this.isMatrix = false;
         this.rows = 0;
         this.cols = 0;
+        this.isStruct = false;
     }
 
      public Value(String name, String type, int length, boolean isMatrix, int rows, int cols) {
@@ -47,6 +52,16 @@ class Value {
         this.isMatrix = isMatrix;
         this.rows = rows;
         this.cols = cols;
+        this.isStruct = false;
+    }
+
+    public Value(String name, String type, boolean isStruct, String structType) {
+        this.name = name;
+        this.type = type;
+        this.isArray = false;
+        this.isMatrix = false;
+        this.isStruct = isStruct;
+        this.structType = structType;
     }
 
     public String getLLVMId() {
@@ -58,7 +73,15 @@ class FunctionData {
     public String type;
     public List<String> paramTypes = new ArrayList<>();
     public List<String> paramNames = new ArrayList<>();
+    public List<Boolean> isParamStruct = new ArrayList<>();
 }
+
+class StructData {
+    public String name;
+    public List<String> fieldTypes = new ArrayList<>();
+    public List<String> fieldNames = new ArrayList<>();
+}
+
 public class LLVMActions extends LangXBaseListener {
     Stack<HashMap<String, Value>> scopes = new Stack<>();
     Stack<Value> stack = new Stack<>();
@@ -70,6 +93,8 @@ public class LLVMActions extends LangXBaseListener {
     Stack<String> forStepStack = new Stack<>();
     HashMap<String, FunctionData> functions = new HashMap<>();
     String currentFunctionType = null;
+    HashMap<String, StructData> structDefs = new HashMap<>();
+    StructData currentStruct = null;
 
     static int BUFFER_SIZE = 256; 
     public LLVMActions() {
@@ -101,6 +126,10 @@ public class LLVMActions extends LangXBaseListener {
 
     private String getCastedValueReg(String expectedType, Value val, int line) {
          if (expectedType.equals(val.type)) {
+            return val.name;
+        }
+
+        if (val.isStruct && expectedType.equals(val.structType)) {
             return val.name;
         }
         
@@ -239,7 +268,7 @@ public class LLVMActions extends LangXBaseListener {
         LLVMGenerator.read(address, arr.type, 0);
     }
 
-    @Override
+@Override
     public void exitWriteId(LangXParser.WriteIdContext ctx) {
         String ID = ctx.ID().getText();
         Value val = getVariable(ID);
@@ -249,7 +278,10 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
 
-        if (val.isMatrix) {
+        if (val.isStruct) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot Reveal whole Legion '" + ID + "'. Reveal specific fields instead (e.g., " + ID + ".fieldName).");
+            System.exit(1);
+        } else if (val.isMatrix) {
             LLVMGenerator.printMatrix(val.getLLVMId(), val.type, val.rows, val.cols);
         } else if (val.isArray) {
             LLVMGenerator.printArray(val.getLLVMId(), val.type, val.arraySize);
@@ -328,11 +360,27 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
+
+        Value val = stack.pop();
+
+        if (var.isStruct) {
+            if (!val.isStruct) {
+                System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign a single simple value to Legion '" + ID + "'.");
+                System.exit(1);
+            }
+            if (!var.structType.equals(val.structType)) {
+                System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign Legion of type " + val.structType + " to Legion of type " + var.structType + ".");
+                System.exit(1);
+            }
+            
+            LLVMGenerator.copyStruct(var.getLLVMId(), val.name, var.structType);
+            return;
+        }
+
         if (var.isArray || var.isMatrix) {
-            System.err.println("Semantic error: Cannot assign to whole array " + ID + ". Use " + ID + "[index].");
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot assign to whole array/matrix '" + ID + "'. Use specific indexes.");
             System.exit(1);
         }
-        Value val = stack.pop();
         
         String finalValueReg = getCastedValueReg(var.type, val, ctx.getStart().getLine());
         
@@ -355,10 +403,16 @@ public class LLVMActions extends LangXBaseListener {
             System.err.println("Semantic error: Value " + ID + " does not exist!");
             System.exit(1);
         }
-        if (var.isArray || var.isMatrix) {
-            System.err.println("Semantic error: Cannot Confess whole array " + ID + ". Use " + ID + "[index].");
+
+        if (var.isStruct) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot Confess whole Legion '" + ID + "'. Use " + ID + ".fieldName.");
             System.exit(1);
         }
+        if (var.isArray || var.isMatrix) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Cannot Confess whole array/matrix '" + ID + "'. Use specific indexes.");
+            System.exit(1);
+        }
+        
         LLVMGenerator.read(var.getLLVMId(), var.type, var.length);
     }
 
@@ -525,7 +579,6 @@ public class LLVMActions extends LangXBaseListener {
         } else if (v1.type.equals("SmallDivine") && v2.type.equals("SmallDivine")) {
             LLVMGenerator.compare(op, v1.name, v2.name, "SmallDivine");
         } else if (v1.type.equals("SmallDivine") && v2.type.equals("Divine")) {
-            // Promocja lewego argumentu ze SmallDivine na Divine
             String extendedV1 = LLVMGenerator.float_to_double(v1.name);
             LLVMGenerator.compare(op, extendedV1, v2.name, "Divine");
         } else if (v1.type.equals("Divine") && v2.type.equals("SmallDivine")) {
@@ -649,9 +702,16 @@ public class LLVMActions extends LangXBaseListener {
             System.exit(1);
         }
         if (var.isArray || var.isMatrix) {
-            System.err.println("Semantic error: Array " + ID + " requires index.");
+            System.err.println("Semantic error: Array/Matrix " + ID + " requires index.");
             System.exit(1);
         }
+        
+        if (var.isStruct) {
+            Value structPointer = new Value(var.getLLVMId(), "Legion", true, var.structType);
+            stack.push(structPointer);
+            return;
+        }
+
         LLVMGenerator.load(var.getLLVMId(), var.type);
         stack.push(new Value("%" + (LLVMGenerator.reg - 1), var.type, var.length));
     }
@@ -865,26 +925,39 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void enterFunctionDecl(LangXParser.FunctionDeclContext ctx) {
         String ID = ctx.ID().getText();
-        String type = ctx.type().getText();
+        String type = ctx.typeName().getText();
         currentFunctionType = type; 
         
         FunctionData fd = new FunctionData();
         fd.type = type;
+        java.util.Map<String, Boolean> isStructMap = new HashMap<>();
         
         if (ctx.paramList() != null) {
-            for (int i = 0; i < ctx.paramList().type().size(); i++) {
-                fd.paramTypes.add(ctx.paramList().type(i).getText());
-                fd.paramNames.add(ctx.paramList().ID(i).getText());
+            for (int i = 0; i < ctx.paramList().typeName().size(); i++) {
+                String pType = ctx.paramList().typeName(i).getText();
+                String pName = ctx.paramList().ID(i).getText();
+                boolean isStr = structDefs.containsKey(pType);
+                
+                fd.paramTypes.add(pType);
+                fd.paramNames.add(pName);
+                fd.isParamStruct.add(isStr);
+                isStructMap.put(pName, isStr);
             }
         }
         functions.put(ID, fd);
         scopes.push(new HashMap<>()); 
         
         for (int i = 0; i < fd.paramNames.size(); i++) {
-            addVariable(fd.paramNames.get(i), new Value(fd.paramNames.get(i), fd.paramTypes.get(i), 0));
+            Value v;
+            if (fd.isParamStruct.get(i)) {
+                v = new Value(fd.paramNames.get(i) + "_arg", "Legion", true, fd.paramTypes.get(i));
+            } else {
+                v = new Value(fd.paramNames.get(i), fd.paramTypes.get(i), 0);
+            }
+            addVariable(fd.paramNames.get(i), v);
         }
         
-        LLVMGenerator.startFunction(ID, type, fd.paramNames, fd.paramTypes);
+        LLVMGenerator.startFunction(ID, type, fd.paramNames, fd.paramTypes, isStructMap);
     }
 
     @Override
@@ -904,6 +977,150 @@ public class LLVMActions extends LangXBaseListener {
     
         String finalReg = getCastedValueReg(currentFunctionType, val, ctx.getStart().getLine());
         LLVMGenerator.fulfill(finalReg, currentFunctionType);
+    }
+
+    @Override
+    public void enterStructDecl(LangXParser.StructDeclContext ctx) {
+        String structName = ctx.ID().getText();
+        if (structDefs.containsKey(structName)) {
+            System.err.println("Semantic error: Legion " + structName + " is already defined!");
+            System.exit(1);
+        }
+        currentStruct = new StructData();
+        currentStruct.name = structName;
+    }
+
+    @Override
+    public void exitStructField(LangXParser.StructFieldContext ctx) {
+        String fieldType = ctx.type().getText();
+        String fieldName = ctx.ID().getText();
+        if (fieldType.equals("Eternal")) {
+            System.err.println("Semantic error: Eternal fields inside Legions are not supported yet.");
+            System.exit(1);
+        }
+        if (currentStruct.fieldNames.contains(fieldName)) {
+            System.err.println("Semantic error: Field " + fieldName + " already exists in Legion " + currentStruct.name);
+            System.exit(1);
+        }
+        currentStruct.fieldTypes.add(fieldType);
+        currentStruct.fieldNames.add(fieldName);
+    }
+
+    @Override
+    public void exitStructDecl(LangXParser.StructDeclContext ctx) {
+        structDefs.put(currentStruct.name, currentStruct);
+        LLVMGenerator.defineStruct(currentStruct.name, currentStruct.fieldTypes);
+        currentStruct = null;
+    }
+
+    @Override
+    public void exitDeclareStruct(LangXParser.DeclareStructContext ctx) {
+        String structName = ctx.ID(0).getText();
+        String varName = ctx.ID(1).getText();
+
+        if (!structDefs.containsKey(structName)) {
+            System.err.println("Semantic error: Legion " + structName + " does not exist!");
+            System.exit(1);
+        }
+        if (isDeclaredInCurrentScope(varName)) {
+            System.err.println("Semantic error: Value " + varName + " is already declared!");
+            System.exit(1);
+        }
+
+        Value newVar = new Value(varName, "Legion", true, structName);
+        addVariable(varName, newVar);
+        
+        if (newVar.isGlobal) {
+            LLVMGenerator.declareGlobalStruct(varName, structName);
+        } else {
+            LLVMGenerator.declareStruct(varName, structName);
+        }
+    }
+
+    private int getStructFieldIndexOrDie(String structName, String fieldName, int line) {
+        StructData sd = structDefs.get(structName);
+        int index = sd.fieldNames.indexOf(fieldName);
+        if (index == -1) {
+            System.err.println("Semantic error (line " + line + "): Legion " + structName + " has no field named " + fieldName);
+            System.exit(1);
+        }
+        return index;
+    }
+
+    @Override
+    public void exitAssignStructField(LangXParser.AssignStructFieldContext ctx) {
+        String varName = ctx.ID(0).getText();
+        String fieldName = ctx.ID(1).getText();
+        Value val = stack.pop();
+
+        Value var = getVariable(varName);
+        if (var == null || !var.isStruct) {
+            System.err.println("Semantic error: " + varName + " is not a Legion!");
+            System.exit(1);
+        }
+
+        int fieldIndex = getStructFieldIndexOrDie(var.structType, fieldName, ctx.getStart().getLine());
+        String fieldType = structDefs.get(var.structType).fieldTypes.get(fieldIndex);
+
+        String finalValueReg = getCastedValueReg(fieldType, val, ctx.getStart().getLine());
+        String address = LLVMGenerator.getStructElementAddress(var.getLLVMId(), var.structType, fieldIndex);
+        LLVMGenerator.assign(address, finalValueReg, fieldType);
+    }
+
+    @Override
+    public void exitStructFieldAccess(LangXParser.StructFieldAccessContext ctx) {
+        String varName = ctx.ID(0).getText();
+        String fieldName = ctx.ID(1).getText();
+
+        Value var = getVariable(varName);
+        if (var == null || !var.isStruct) {
+            System.err.println("Semantic error: " + varName + " is not a Legion!");
+            System.exit(1);
+        }
+
+        int fieldIndex = getStructFieldIndexOrDie(var.structType, fieldName, ctx.getStart().getLine());
+        String fieldType = structDefs.get(var.structType).fieldTypes.get(fieldIndex);
+
+        String address = LLVMGenerator.getStructElementAddress(var.getLLVMId(), var.structType, fieldIndex);
+        LLVMGenerator.load(address, fieldType);
+        stack.push(new Value("%" + (LLVMGenerator.reg - 1), fieldType, 0));
+    }
+
+    @Override
+    public void exitReadStructField(LangXParser.ReadStructFieldContext ctx) {
+        String varName = ctx.ID(0).getText();
+        String fieldName = ctx.ID(1).getText();
+
+        Value var = getVariable(varName);
+        if (var == null || !var.isStruct) {
+            System.err.println("Semantic error: " + varName + " is not a Legion!");
+            System.exit(1);
+        }
+
+        int fieldIndex = getStructFieldIndexOrDie(var.structType, fieldName, ctx.getStart().getLine());
+        String fieldType = structDefs.get(var.structType).fieldTypes.get(fieldIndex);
+
+        String address = LLVMGenerator.getStructElementAddress(var.getLLVMId(), var.structType, fieldIndex);
+        LLVMGenerator.read(address, fieldType, 0);
+    }
+
+    @Override
+    public void exitWriteStructField(LangXParser.WriteStructFieldContext ctx) {
+        String varName = ctx.ID(0).getText();
+        String fieldName = ctx.ID(1).getText();
+
+        Value var = getVariable(varName);
+        if (var == null || !var.isStruct) {
+            System.err.println("Semantic error: " + varName + " is not a Legion!");
+            System.exit(1);
+        }
+
+        int fieldIndex = getStructFieldIndexOrDie(var.structType, fieldName, ctx.getStart().getLine());
+        String fieldType = structDefs.get(var.structType).fieldTypes.get(fieldIndex);
+
+        String address = LLVMGenerator.getStructElementAddress(var.getLLVMId(), var.structType, fieldIndex);
+        LLVMGenerator.load(address, fieldType);
+        LLVMGenerator.print("%" + (LLVMGenerator.reg - 1), fieldType);
     }
 
     private void handleFunctionCall(String ID, LangXParser.ArgListContext argListCtx, int line) {
@@ -926,12 +1143,28 @@ public class LLVMActions extends LangXBaseListener {
         
         List<String> argRegs = new ArrayList<>();
         for (int i = 0; i < argCount; i++) {
-            String finalReg = getCastedValueReg(fd.paramTypes.get(i), args.get(i), line);
-            argRegs.add(finalReg);
+            Value argVal = args.get(i);
+            String expectedType = fd.paramTypes.get(i);
+            boolean isExpectedStruct = fd.isParamStruct.get(i);
+
+            if (isExpectedStruct) {
+                if (!argVal.isStruct || !argVal.structType.equals(expectedType)) {
+                    System.err.println("Semantic error: Function " + ID + " expects Legion " + expectedType);
+                    System.exit(1);
+                }
+                argRegs.add(argVal.name);
+            } else {
+                String finalReg = getCastedValueReg(expectedType, argVal, line);
+                argRegs.add(finalReg);
+            }
         }
         
         String retReg = LLVMGenerator.callFunction(ID, fd.type, argRegs, fd.paramTypes);
-        stack.push(new Value(retReg, fd.type, 0));
+        if (structDefs.containsKey(fd.type)) {
+            stack.push(new Value(retReg, "Legion", true, fd.type));
+        } else {
+            stack.push(new Value(retReg, fd.type, 0));
+        }
     }
 
     @Override
