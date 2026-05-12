@@ -72,4 +72,7 @@ Reveal "=== WYSZLAM Z FUNKCJI ===";
 Reveal "Stan GLOBALNEJ tablicy po modyfikacji wewnatrz funkcji:";
 Reveal globalnaTablica;
 
+Reveal "Stan GLOBALNEJ macierzy:";
+Reveal globalnaMacierz;
+
 Reveal "=== KONIEC ===";

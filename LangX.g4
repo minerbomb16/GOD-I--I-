@@ -1,9 +1,13 @@
 grammar LangX;
 
-prog: (structDecl | functionDecl | start)+ EOF ;
+prog: (structDecl | classDecl | functionDecl | start)+ EOF ;
 
 structDecl: 'Legion' ID '{' structField+ '}' ;
 structField: type ID ';' ;
+
+classDecl: 'Order' ID '{' (classField | functionDecl)+ '}' ;
+classField: visibility? type ID ';' ;
+visibility: 'Sacred' | 'Profane' ;
 
 start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                 #declareMatrix
     | ID '[' expr ']' '[' expr ']' 'be transformed into' expr ';'   #assignMatrixElem
@@ -34,9 +38,11 @@ start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                 #declareMatr
     | 'Fulfill' expr ';'                                            #returnStat
     
     | 'Create' 'Legion' ID ID ';'                                   #declareStruct
+    | 'Create' 'Order' ID ID ';'                                    #declareClass
     | ID '.' ID 'be transformed into' expr ';'                      #assignStructField
     | 'Confess' ID '.' ID ';'                                       #readStructField
     | 'Reveal' ID '.' ID ';'                                        #writeStructField
+    | ID '.' ID '(' argList? ')' ';'                                #methodCallStat
     ;
 
 
@@ -83,6 +89,7 @@ expr: '-' expr                                              #unaryMinus
     | ID '.' ID                                             #structFieldAccess
     | ID                                                    #var
     | '(' expr ')'                                          #parens
+    | ID '.' ID '(' argList? ')'                            #methodCallExpr
     ;
 
 andOp: 'AND' ;

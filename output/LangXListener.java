@@ -37,6 +37,36 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitStructField(LangXParser.StructFieldContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link LangXParser#classDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassDecl(LangXParser.ClassDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#classDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassDecl(LangXParser.ClassDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#classField}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassField(LangXParser.ClassFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#classField}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassField(LangXParser.ClassFieldContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#visibility}.
+	 * @param ctx the parse tree
+	 */
+	void enterVisibility(LangXParser.VisibilityContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#visibility}.
+	 * @param ctx the parse tree
+	 */
+	void exitVisibility(LangXParser.VisibilityContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code declareMatrix}
 	 * labeled alternative in {@link LangXParser#start}.
 	 * @param ctx the parse tree
@@ -313,6 +343,18 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitDeclareStruct(LangXParser.DeclareStructContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declareClass}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclareClass(LangXParser.DeclareClassContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declareClass}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclareClass(LangXParser.DeclareClassContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code assignStructField}
 	 * labeled alternative in {@link LangXParser#start}.
 	 * @param ctx the parse tree
@@ -348,6 +390,18 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitWriteStructField(LangXParser.WriteStructFieldContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code methodCallStat}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethodCallStat(LangXParser.MethodCallStatContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code methodCallStat}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethodCallStat(LangXParser.MethodCallStatContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link LangXParser#ifStatement}.
 	 * @param ctx the parse tree
@@ -622,6 +676,18 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStructFieldAccess(LangXParser.StructFieldAccessContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code methodCallExpr}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethodCallExpr(LangXParser.MethodCallExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code methodCallExpr}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethodCallExpr(LangXParser.MethodCallExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code logicAnd}
 	 * labeled alternative in {@link LangXParser#expr}.

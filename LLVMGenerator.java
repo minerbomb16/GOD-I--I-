@@ -66,7 +66,6 @@ class LLVMGenerator {
       reg++;
    }
 
-
    static String getArrayElementAddress(String id, String type, int size, String indexReg) {
       String llvmType = llvmType(type);
 
@@ -111,8 +110,19 @@ class LLVMGenerator {
       }
    }
 
-   static void endFunction() {
+   static void endFunction(String type) {
+      String llvmRetType = llvmType(type);
+      String defaultRet = "0"; 
+      
+      if (llvmRetType.equals("double") || llvmRetType.equals("float")) defaultRet = "0.0";
+      else if (llvmRetType.equals("i1")) defaultRet = "false";
+      else if (llvmRetType.endsWith("*")) defaultRet = "null"; // Dla wskaźników i Legionów
+
+      main_text += "    ret " + llvmRetType + " " + defaultRet + "\n";
       main_text += "}\n\n";
+
+      main_text = main_text.replaceAll("([ \\t]*ret\\s+[^\\n]+)\\n[ \\t]*br\\s+label\\s+[^\\n]+\\n", "$1\n");
+
       functions_text += main_text; 
       main_text = main_buffer;     
    }
@@ -338,7 +348,7 @@ class LLVMGenerator {
       printArrayRange(id, type, size, 0, size - 1);
    }
 
-      static void printMatrix(String id, String type, int rows, int cols) {
+   static void printMatrix(String id, String type, int rows, int cols) {
       for (int i = 0; i < rows; i++) {
          for (int j = 0; j < cols; j++) {
             String address = getMatrixElementAddress(id, type, rows, cols, Integer.toString(i), Integer.toString(j));
@@ -392,7 +402,6 @@ class LLVMGenerator {
          main_text += "    store i1 " + boolReg + ", i1* " + pointer + "\n";
       }
    }
-
 
    static void compare(String op, String val1, String val2, String type) {
       String llvmType = llvmType(type);

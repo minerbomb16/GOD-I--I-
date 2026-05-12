@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.util.ArrayList; 
 import java.util.List;
+import java.util.Map;
 
 class Value {
     public String name;
@@ -78,8 +79,11 @@ class FunctionData {
 
 class StructData {
     public String name;
+    public boolean isClass = false; 
     public List<String> fieldTypes = new ArrayList<>();
     public List<String> fieldNames = new ArrayList<>();
+    public Map<String, Boolean> isPublic = new HashMap<>(); 
+    public List<String> methods = new ArrayList<>();
 }
 
 public class LLVMActions extends LangXBaseListener {
@@ -95,6 +99,7 @@ public class LLVMActions extends LangXBaseListener {
     String currentFunctionType = null;
     HashMap<String, StructData> structDefs = new HashMap<>();
     StructData currentStruct = null;
+    String currentCompilingClass = null;
 
     static int BUFFER_SIZE = 256; 
     public LLVMActions() {
@@ -924,13 +929,26 @@ public class LLVMActions extends LangXBaseListener {
 
     @Override
     public void enterFunctionDecl(LangXParser.FunctionDeclContext ctx) {
-        String ID = ctx.ID().getText();
+        String originalID = ctx.ID().getText();
         String type = ctx.typeName().getText();
         currentFunctionType = type; 
-        
+
         FunctionData fd = new FunctionData();
         fd.type = type;
         java.util.Map<String, Boolean> isStructMap = new HashMap<>();
+
+        String functionID = originalID;
+
+        if (currentStruct != null) {
+            functionID = currentStruct.name + "_" + originalID;
+            currentStruct.methods.add(originalID);
+            currentCompilingClass = currentStruct.name; 
+
+            fd.paramTypes.add(currentStruct.name);
+            fd.paramNames.add("this");
+            fd.isParamStruct.add(true);
+            isStructMap.put("this", true);
+        }
         
         if (ctx.paramList() != null) {
             for (int i = 0; i < ctx.paramList().typeName().size(); i++) {
@@ -944,7 +962,8 @@ public class LLVMActions extends LangXBaseListener {
                 isStructMap.put(pName, isStr);
             }
         }
-        functions.put(ID, fd);
+
+        functions.put(functionID, fd);
         scopes.push(new HashMap<>()); 
         
         for (int i = 0; i < fd.paramNames.size(); i++) {
@@ -957,14 +976,15 @@ public class LLVMActions extends LangXBaseListener {
             addVariable(fd.paramNames.get(i), v);
         }
         
-        LLVMGenerator.startFunction(ID, type, fd.paramNames, fd.paramTypes, isStructMap);
+        LLVMGenerator.startFunction(functionID, type, fd.paramNames, fd.paramTypes, isStructMap);
     }
 
     @Override
     public void exitFunctionDecl(LangXParser.FunctionDeclContext ctx) {
         scopes.pop(); 
-        LLVMGenerator.endFunction();
+        LLVMGenerator.endFunction(currentFunctionType);
         currentFunctionType = null;
+        currentCompilingClass = null;
     }
 
     @Override
@@ -988,22 +1008,22 @@ public class LLVMActions extends LangXBaseListener {
         }
         currentStruct = new StructData();
         currentStruct.name = structName;
+
+        structDefs.put(structName, currentStruct);
     }
 
     @Override
     public void exitStructField(LangXParser.StructFieldContext ctx) {
         String fieldType = ctx.type().getText();
         String fieldName = ctx.ID().getText();
-        if (fieldType.equals("Eternal")) {
-            System.err.println("Semantic error: Eternal fields inside Legions are not supported yet.");
-            System.exit(1);
-        }
+        
         if (currentStruct.fieldNames.contains(fieldName)) {
             System.err.println("Semantic error: Field " + fieldName + " already exists in Legion " + currentStruct.name);
             System.exit(1);
         }
         currentStruct.fieldTypes.add(fieldType);
         currentStruct.fieldNames.add(fieldName);
+        currentStruct.isPublic.put(fieldName, true); 
     }
 
     @Override
@@ -1017,6 +1037,12 @@ public class LLVMActions extends LangXBaseListener {
     public void exitDeclareStruct(LangXParser.DeclareStructContext ctx) {
         String structName = ctx.ID(0).getText();
         String varName = ctx.ID(1).getText();
+
+        StructData sd = structDefs.get(structName);
+        if (sd == null || sd.isClass) { 
+            System.err.println("Semantic error: Legion " + structName + " does not exist (Did you mean 'Create Order'?)");
+            System.exit(1);
+        }
 
         if (!structDefs.containsKey(structName)) {
             System.err.println("Semantic error: Legion " + structName + " does not exist!");
@@ -1041,8 +1067,16 @@ public class LLVMActions extends LangXBaseListener {
         StructData sd = structDefs.get(structName);
         int index = sd.fieldNames.indexOf(fieldName);
         if (index == -1) {
-            System.err.println("Semantic error (line " + line + "): Legion " + structName + " has no field named " + fieldName);
+            System.err.println("Semantic error: Legion " + structName + " has no field named " + fieldName);
             System.exit(1);
+        }
+
+        boolean isPub = sd.isPublic.get(fieldName);
+        if (!isPub) {
+            if (currentCompilingClass == null || !currentCompilingClass.equals(structName)) {
+                System.err.println("Semantic error (line " + line + "): Field " + fieldName + " is Sacred (private)!");
+                System.exit(1);
+            }
         }
         return index;
     }
@@ -1177,4 +1211,136 @@ public class LLVMActions extends LangXBaseListener {
     public void exitFunctionCallExpr(LangXParser.FunctionCallExprContext ctx) {
         handleFunctionCall(ctx.ID().getText(), ctx.argList(), ctx.getStart().getLine());
     }
+
+    private void handleMethodCall(String varName, String methodName, LangXParser.ArgListContext argListCtx, int line) {
+        Value var = getVariable(varName);
+        if (var == null || !var.isStruct) {
+            System.err.println("Semantic error: " + varName + " is not a Legion!");
+            System.exit(1);
+        }
+
+        StructData sd = structDefs.get(var.structType);
+        if (!sd.methods.contains(methodName)) {
+            System.err.println("Semantic error: Legion " + var.structType + " has no Miracle named " + methodName);
+            System.exit(1);
+        }
+
+        String mangledName = var.structType + "_" + methodName;
+
+        FunctionData fd = functions.get(mangledName);
+        int expectedArgs = fd.paramTypes.size() - 1; // Odliczamy ukryte 'this'
+        int providedArgs = argListCtx == null ? 0 : argListCtx.expr().size();
+
+        if (providedArgs != expectedArgs) {
+            System.err.println("Semantic error: Method expects " + expectedArgs + " arguments.");
+            System.exit(1);
+        }
+
+        List<Value> args = new ArrayList<>();
+        for (int i = 0; i < providedArgs; i++) {
+            args.add(0, stack.pop()); 
+        }
+
+        List<String> argRegs = new ArrayList<>();
+
+        argRegs.add(var.getLLVMId());
+
+        for (int i = 0; i < providedArgs; i++) {
+            Value argVal = args.get(i);
+            String expectedType = fd.paramTypes.get(i + 1); 
+            boolean isExpectedStruct = fd.isParamStruct.get(i + 1);
+
+            if (isExpectedStruct) {
+                if (!argVal.isStruct || !argVal.structType.equals(expectedType)) {
+                    System.err.println("Semantic error (line " + line + "): Miracle expects Legion " + expectedType);
+                    System.exit(1);
+                }
+                argRegs.add(argVal.name);
+            } else {
+                String finalReg = getCastedValueReg(expectedType, argVal, line);
+                argRegs.add(finalReg);
+            }
+        }
+
+        String retReg = LLVMGenerator.callFunction(mangledName, fd.type, argRegs, fd.paramTypes);
+        if (structDefs.containsKey(fd.type)) {
+            stack.push(new Value(retReg, "Legion", true, fd.type));
+        } else {
+            stack.push(new Value(retReg, fd.type, 0));
+        }
+    }
+
+    @Override
+    public void exitMethodCallStat(LangXParser.MethodCallStatContext ctx) {
+        handleMethodCall(ctx.ID(0).getText(), ctx.ID(1).getText(), ctx.argList(), ctx.getStart().getLine());
+        stack.pop(); // Ściągamy wynik ze stosu, bo to instrukcja statmentowa
+    }
+
+    @Override
+    public void exitMethodCallExpr(LangXParser.MethodCallExprContext ctx) {
+        handleMethodCall(ctx.ID(0).getText(), ctx.ID(1).getText(), ctx.argList(), ctx.getStart().getLine());
+    }
+
+    @Override
+    public void enterClassDecl(LangXParser.ClassDeclContext ctx) {
+        String className = ctx.ID().getText();
+        if (structDefs.containsKey(className)) {
+            System.err.println("Semantic error: Name " + className + " is already defined!");
+            System.exit(1);
+        }
+        currentStruct = new StructData();
+        currentStruct.name = className;
+        currentStruct.isClass = true; // Zaznaczamy, że to Klasa!
+        structDefs.put(className, currentStruct);
+    }
+
+    @Override
+    public void exitClassField(LangXParser.ClassFieldContext ctx) {
+        String fieldType = ctx.type().getText();
+        String fieldName = ctx.ID().getText();
+        boolean isPub = true; 
+        if (ctx.visibility() != null && ctx.visibility().getText().equals("Sacred")) {
+            isPub = false;
+        }
+        
+        if (currentStruct.fieldNames.contains(fieldName)) {
+            System.err.println("Semantic error: Field " + fieldName + " already exists in Order " + currentStruct.name);
+            System.exit(1);
+        }
+        currentStruct.fieldTypes.add(fieldType);
+        currentStruct.fieldNames.add(fieldName);
+        currentStruct.isPublic.put(fieldName, isPub);
+    }
+
+    @Override
+    public void exitClassDecl(LangXParser.ClassDeclContext ctx) {
+        LLVMGenerator.defineStruct(currentStruct.name, currentStruct.fieldTypes);
+        currentStruct = null;
+    }
+
+    @Override
+    public void exitDeclareClass(LangXParser.DeclareClassContext ctx) {
+        String className = ctx.ID(0).getText();
+        String varName = ctx.ID(1).getText();
+
+        StructData sd = structDefs.get(className);
+        if (sd == null || !sd.isClass) {
+            System.err.println("Semantic error: Order " + className + " does not exist (Did you mean 'Create Legion'?)");
+            System.exit(1);
+        }
+        if (isDeclaredInCurrentScope(varName)) {
+            System.err.println("Semantic error: Value " + varName + " is already declared!");
+            System.exit(1);
+        }
+
+        Value newVar = new Value(varName, "Legion", true, className);
+        addVariable(varName, newVar);
+        
+        if (newVar.isGlobal) {
+            LLVMGenerator.declareGlobalStruct(varName, className);
+        } else {
+            LLVMGenerator.declareStruct(varName, className);
+        }
+    }
+
 }
