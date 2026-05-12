@@ -1,6 +1,9 @@
 grammar LangX;
 
-prog: (functionDecl | start)+ EOF ; 
+prog: (structDecl | functionDecl | start)+ EOF ;
+
+structDecl: 'Legion' ID '{' structField+ '}' ;
+structField: type ID ';' ;
 
 start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                 #declareMatrix
     | ID '[' expr ']' '[' expr ']' 'be transformed into' expr ';'   #assignMatrixElem
@@ -27,8 +30,13 @@ start: 'Create' type ID '[' INT ']' '[' INT ']' ';'                 #declareMatr
     | whileStatement                                                #whileStmtNode
     | forStatement                                                  #forStmtNode
 
-    | ID '(' argList? ')'                                           #functionCallStat
+    | ID '(' argList? ')' ';'                                       #functionCallStat
     | 'Fulfill' expr ';'                                            #returnStat
+    
+    | 'Create' 'Legion' ID ID ';'                                   #declareStruct
+    | ID '.' ID 'be transformed into' expr ';'                      #assignStructField
+    | 'Confess' ID '.' ID ';'                                       #readStructField
+    | 'Reveal' ID '.' ID ';'                                        #writeStructField
     ;
 
 
@@ -48,8 +56,9 @@ forInitCond: forStartExpr 'to' expr               #forTo
            ;
 forStartExpr: 'Way of the Cross' ID 'Stations' expr ;
 
-functionDecl: 'Miracle' type ID '(' paramList? ')' '{' start* '}' ;
-paramList: type ID (',' type ID)* ;
+typeName: type | ID ;
+functionDecl: 'Miracle' typeName ID '(' paramList? ')' '{' start* '}' ;
+paramList: typeName ID (',' typeName ID)* ;
 
 argList: expr (',' expr)* ;
 
@@ -71,6 +80,7 @@ expr: '-' expr                                              #unaryMinus
     | INT                                                   #intConst
     | REAL                                                  #realConst
     | STRING                                                #stringConst
+    | ID '.' ID                                             #structFieldAccess
     | ID                                                    #var
     | '(' expr ')'                                          #parens
     ;

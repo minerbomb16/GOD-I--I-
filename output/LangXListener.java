@@ -17,6 +17,26 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitProg(LangXParser.ProgContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link LangXParser#structDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterStructDecl(LangXParser.StructDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#structDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitStructDecl(LangXParser.StructDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#structField}.
+	 * @param ctx the parse tree
+	 */
+	void enterStructField(LangXParser.StructFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#structField}.
+	 * @param ctx the parse tree
+	 */
+	void exitStructField(LangXParser.StructFieldContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code declareMatrix}
 	 * labeled alternative in {@link LangXParser#start}.
 	 * @param ctx the parse tree
@@ -281,6 +301,54 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitReturnStat(LangXParser.ReturnStatContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declareStruct}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclareStruct(LangXParser.DeclareStructContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declareStruct}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclareStruct(LangXParser.DeclareStructContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code assignStructField}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignStructField(LangXParser.AssignStructFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code assignStructField}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignStructField(LangXParser.AssignStructFieldContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code readStructField}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterReadStructField(LangXParser.ReadStructFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code readStructField}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitReadStructField(LangXParser.ReadStructFieldContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code writeStructField}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteStructField(LangXParser.WriteStructFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code writeStructField}
+	 * labeled alternative in {@link LangXParser#start}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteStructField(LangXParser.WriteStructFieldContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link LangXParser#ifStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -384,6 +452,16 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitForStartExpr(LangXParser.ForStartExprContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#typeName}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeName(LangXParser.TypeNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#typeName}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeName(LangXParser.TypeNameContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link LangXParser#functionDecl}.
 	 * @param ctx the parse tree
@@ -532,6 +610,18 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMulDiv(LangXParser.MulDivContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code structFieldAccess}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterStructFieldAccess(LangXParser.StructFieldAccessContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code structFieldAccess}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitStructFieldAccess(LangXParser.StructFieldAccessContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code logicAnd}
 	 * labeled alternative in {@link LangXParser#expr}.

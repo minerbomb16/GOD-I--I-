@@ -28,6 +28,30 @@ public class LangXBaseListener implements LangXListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterStructDecl(LangXParser.StructDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStructDecl(LangXParser.StructDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStructField(LangXParser.StructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStructField(LangXParser.StructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDeclareMatrix(LangXParser.DeclareMatrixContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -292,6 +316,54 @@ public class LangXBaseListener implements LangXListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDeclareStruct(LangXParser.DeclareStructContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclareStruct(LangXParser.DeclareStructContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignStructField(LangXParser.AssignStructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignStructField(LangXParser.AssignStructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterReadStructField(LangXParser.ReadStructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitReadStructField(LangXParser.ReadStructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWriteStructField(LangXParser.WriteStructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWriteStructField(LangXParser.WriteStructFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIfStatement(LangXParser.IfStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -407,6 +479,18 @@ public class LangXBaseListener implements LangXListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitForStartExpr(LangXParser.ForStartExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTypeName(LangXParser.TypeNameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeName(LangXParser.TypeNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -563,6 +647,18 @@ public class LangXBaseListener implements LangXListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitMulDiv(LangXParser.MulDivContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStructFieldAccess(LangXParser.StructFieldAccessContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStructFieldAccess(LangXParser.StructFieldAccessContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
