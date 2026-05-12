@@ -939,8 +939,17 @@ public class LLVMActions extends LangXBaseListener {
 
         String functionID = originalID;
 
+        if (functions.containsKey(functionID)) {
+            System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Miracle '" + functionID + "' is already defined!");
+            System.exit(1);
+        }
+
         if (currentStruct != null) {
             functionID = currentStruct.name + "_" + originalID;
+            if (functions.containsKey(functionID)) {
+                System.err.println("Semantic error (line " + ctx.getStart().getLine() + "): Miracle '" + functionID + "' is already defined!");
+                System.exit(1);
+            }
             currentStruct.methods.add(originalID);
             currentCompilingClass = currentStruct.name; 
 
@@ -1214,21 +1223,24 @@ public class LLVMActions extends LangXBaseListener {
 
     private void handleMethodCall(String varName, String methodName, LangXParser.ArgListContext argListCtx, int line) {
         Value var = getVariable(varName);
+        
         if (var == null || !var.isStruct) {
-            System.err.println("Semantic error: " + varName + " is not a Legion!");
+            System.err.println("Semantic error (line " + line + "): " + varName + " is not an Order!");
             System.exit(1);
         }
-
         StructData sd = structDefs.get(var.structType);
-        if (!sd.methods.contains(methodName)) {
-            System.err.println("Semantic error: Legion " + var.structType + " has no Miracle named " + methodName);
+        if (!sd.isClass) {
+            System.err.println("Semantic error (line " + line + "): " + varName + " is a Legion. Miracles can only be called on Orders!");
             System.exit(1);
         }
-
+        if (!sd.methods.contains(methodName)) {
+            System.err.println("Semantic error (line " + line + "): Order " + var.structType + " has no Miracle named " + methodName);
+            System.exit(1);
+        }
         String mangledName = var.structType + "_" + methodName;
 
         FunctionData fd = functions.get(mangledName);
-        int expectedArgs = fd.paramTypes.size() - 1; // Odliczamy ukryte 'this'
+        int expectedArgs = fd.paramTypes.size() - 1; 
         int providedArgs = argListCtx == null ? 0 : argListCtx.expr().size();
 
         if (providedArgs != expectedArgs) {
@@ -1273,7 +1285,7 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitMethodCallStat(LangXParser.MethodCallStatContext ctx) {
         handleMethodCall(ctx.ID(0).getText(), ctx.ID(1).getText(), ctx.argList(), ctx.getStart().getLine());
-        stack.pop(); // Ściągamy wynik ze stosu, bo to instrukcja statmentowa
+        stack.pop(); 
     }
 
     @Override
@@ -1290,7 +1302,7 @@ public class LLVMActions extends LangXBaseListener {
         }
         currentStruct = new StructData();
         currentStruct.name = className;
-        currentStruct.isClass = true; // Zaznaczamy, że to Klasa!
+        currentStruct.isClass = true; 
         structDefs.put(className, currentStruct);
     }
 

@@ -34,12 +34,12 @@ Miracle Mortal testujKolekcje() {
     Reveal lokalnaTablica;
 
     Reveal "-> [Wnetrze funkcji] Tworze i drukuje LOKALNA macierz:";
-    Create Mortal lokalnaMacierz[2][2];
-    lokalnaMacierz[0][0] be transformed into 99;
-    lokalnaMacierz[0][1] be transformed into 88;
-    lokalnaMacierz[1][0] be transformed into 77;
-    lokalnaMacierz[1][1] be transformed into 66;
-    Reveal lokalnaMacierz;
+    Create Mortal globalnaMacierz[2][2];
+    globalnaMacierz[0][0] be transformed into 99;
+    globalnaMacierz[0][1] be transformed into 88;
+    globalnaMacierz[1][0] be transformed into 77;
+    globalnaMacierz[1][1] be transformed into 66;
+    Reveal globalnaMacierz;
 
     Reveal "-> [Wnetrze funkcji] Nadpisuje GLOBALNA tablice uzywajac funkcji pomnoz() i zmiennej mnoznik:";
     globalnaTablica[0] be transformed into pomnoz(globalnaTablica[0]);
