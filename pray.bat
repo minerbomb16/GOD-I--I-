@@ -26,5 +26,18 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
+:: ==============================================
+set "vbsfile=%temp%\hidden_audio.vbs"
+echo Set wmp = CreateObject("WMPlayer.OCX") > "%vbsfile%"
+echo wmp.URL = "%~dp0done.mp3" >> "%vbsfile%"
+echo WScript.Sleep 500 >> "%vbsfile%"
+echo Do While wmp.playState = 3 >> "%vbsfile%"
+echo   WScript.Sleep 500 >> "%vbsfile%"
+echo Loop >> "%vbsfile%"
+echo Set fso = CreateObject("Scripting.FileSystemObject") >> "%vbsfile%"
+echo fso.DeleteFile WScript.ScriptFullName >> "%vbsfile%"
+start "" wscript.exe "%vbsfile%"
+:: ==============================================
+
 echo --- 5. Executing test.exe ---
 .\test.exe

@@ -55,6 +55,50 @@ Pilgrimage prayerCount > 0 AND isAscended {
 
 Create Dogma finalJudgment in the image of isAscended OR (grace > 5.0);
 Reveal "Final Judgment: " + finalJudgment;
+
+Create Mortal artifacts[5];
+artifacts[0] be transformed into 42;
+artifacts[4] be transformed into 77;
+Reveal "First artifacts: ";
+Reveal artifacts[0:2];
+
+Create Divine grid[3][3];
+grid[1][1] be transformed into 3.14;
+Reveal "Center of the grid: ";
+Reveal row grid[1];
+
+Legion Relic {
+    Mortal age;
+    Divine power;
+}
+
+Create Legion Relic holyGrail;
+holyGrail.age be transformed into 2000;
+holyGrail.power be transformed into 99.9;
+Reveal "Relic Power: " + holyGrail.power;
+
+Order Paladin {
+    Profane Mortal health;
+    Sacred Mortal hiddenFaith;
+
+    Miracle Mortal strike(Mortal weaponDamage) {
+        Fulfill health + hiddenFaith + weaponDamage;
+    }
+}
+
+Create Order Paladin arthur;
+arthur.health be transformed into 100;
+
+Create Mortal totalDamage in the image of arthur.strike(15);
+Reveal "Paladin strikes for: " + totalDamage;
+
+Miracle Mortal calculateKarma(Mortal goodDeeds, Mortal sins) {
+    Create Mortal karma in the image of goodDeeds - sins;
+    Fulfill karma;
+}
+
+Create Mortal myKarma in the image of calculateKarma(100, 25);
+Reveal "Your final karma is: " + myKarma;
 ```
 
 # ⚡ Installation (The Ritual)
